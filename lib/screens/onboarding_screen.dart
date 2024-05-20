@@ -1,0 +1,142 @@
+import 'package:flutter/material.dart';
+import 'package:yumpro/widgets/onboarding_steps/step1.dart';
+import 'package:yumpro/widgets/onboarding_steps/step2_hotel.dart';
+import 'package:yumpro/widgets/onboarding_steps/step_influ.dart';
+import 'package:yumpro/widgets/onboarding_steps/step3.dart';
+import 'package:yumpro/services/api_service.dart';
+
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
+  @override
+  _OnboardingScreenState createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  int _currentStep = 0;
+  bool _isHotelAccount = true;
+  bool _showStep3 = true;
+  final Map<String, dynamic> _userData = {}; // Stocker les données de l'utilisateur
+  final ApiService _apiService = ApiService();
+
+  // Méthode pour avancer à l'étape suivante
+  void _nextStep() {
+    setState(() {
+      _currentStep++;
+    });
+  }
+
+  // Méthode pour reculer à l'étape précédente
+  void _previousStep() {
+    setState(() {
+      _currentStep--;
+    });
+  }
+
+  // Méthode pour terminer l'onboarding et naviguer vers l'écran d'accueil
+  void _finishOnboarding(BuildContext context) async {
+    try {
+      await _apiService.updateUser('your-auth-token', _userData);
+      Navigator.pushReplacementNamed(context, '/');
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed to update user: $e')));
+    }
+  }
+
+  void _handleStep1Completion(bool isHotelAccount, Map<String, dynamic> data) {
+    setState(() {
+      _isHotelAccount = isHotelAccount;
+      _showStep3 = !isHotelAccount;
+    });
+    _userData.addAll(data);
+    _nextStep(); // Avance à l'étape suivante
+  }
+
+  void _handleStep2HotelCompletion(Map<String, dynamic> hotelData) {
+    _userData.addAll(hotelData);
+    _nextStep();
+  }
+
+  void _handleStep2InfluencerCompletion(Map<String, dynamic> influencerData) {
+    _userData.addAll(influencerData);
+    _nextStep();
+  }
+
+  void _handleStep3Completion(Map<String, dynamic> profileData) {
+    _userData.addAll(profileData);
+    _nextStep();
+  }
+
+  List<Step> _buildSteps() {
+    List<Step> steps = [
+      Step(
+        title: const Text('Choisir compte hotel ou influenceur'),
+        content: Step1(onCompletion: _handleStep1Completion),
+        isActive: _currentStep == 0,
+      ),
+    ];
+    if (_isHotelAccount) {
+      steps.add(Step(
+        title: const Text('Créer ou rejoindre un établissement'),
+        content: Step2Hotel(
+          onNextPressed: _handleStep2HotelCompletion,
+        ),
+        isActive: _currentStep == 1,
+      ));
+      steps.add(Step(
+        title: const Text('Créer votre profil'),
+        content: Step3Hotel(
+          isHotelAccount: true,
+          onCompletion: _handleStep3Completion,
+        ),
+        isActive: _currentStep == 2,
+      ));
+    } else if (!_isHotelAccount && _showStep3) {
+      steps.add(Step(
+        title: const Text('Ajoutez un compte'),
+        content: Step2Influencer(
+          onNextPressed: _handleStep2InfluencerCompletion,
+        ),
+        isActive: _currentStep == 1,
+      ));
+      steps.add(Step(
+        title: const Text('Créer son profil employé'),
+        content: Step3Hotel(
+          isHotelAccount: false,
+          onCompletion: _handleStep3Completion,
+        ),
+        isActive: _currentStep == 2,
+      ));
+    }
+    return steps;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Onboarding'),
+      ),
+      body: Stepper(
+        currentStep: _currentStep,
+        onStepContinue: _nextStep,
+        onStepCancel: _previousStep,
+        onStepTapped: (step) {
+          setState(() {
+            _currentStep = step;
+          });
+        },
+        steps: _buildSteps(),
+        controlsBuilder: (context, ControlsDetails controlsDetails) {
+          return _currentStep == _buildSteps().length - 1
+              ? ElevatedButton(
+                  onPressed: () => _finishOnboarding(context),
+                  child: const Text('Terminer'),
+                )
+              : const SizedBox();
+        },
+      ),
+    );
+  }
+}
