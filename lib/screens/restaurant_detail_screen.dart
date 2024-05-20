@@ -44,7 +44,8 @@ class RestaurantDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           restaurant.name,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          style:
+              const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         backgroundColor: Colors.white,
         elevation: 0,

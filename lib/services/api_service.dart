@@ -145,46 +145,4 @@ class ApiService {
       print('Error uploading photo: $e');
     }
   }
-
-  final String _brevoApiUrl = 'https://api.brevo.com/v3/smtp/email';
-  final String tryc = '';
-
-  Future<void> sendBasicTransactionalEmail() async {
-    final Map<String, dynamic> requestBody = {
-      'sender': {
-        'name': 'Sender Alex',
-        'email': 'senderalex@example.com',
-      },
-      'to': [
-        {
-          'email': 'johndoe@example.com',
-          'name': 'John Doe',
-        }
-      ],
-      'subject': 'Hello world',
-      'htmlContent':
-          '<html><head></head><body><p>Hello,</p>This is my first transactional email sent from Brevo.</p></body></html>',
-    };
-
-    try {
-      final response = await http.post(
-        Uri.parse(_brevoApiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'api-key': tryc,
-        },
-        body: json.encode(requestBody),
-      );
-
-      if (response.statusCode == 200) {
-        print('Email d\'invitation envoyé avec succès.');
-      } else {
-        print(
-            'Erreur lors de l\'envoi de l\'email d\'invitation: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Erreur lors de l\'envoi de l\'email d\'invitation: $e');
-    }
-  }
 }
