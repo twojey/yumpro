@@ -1,35 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yumpro/models/restaurant.dart';
 import 'package:yumpro/screens/restaurant_detail_screen.dart';
+import 'package:yumpro/services/api_service.dart';
+import 'package:yumpro/services/auth_service.dart';
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 class RestaurantScreen extends StatefulWidget {
   const RestaurantScreen({Key? key}) : super(key: key);
 
   @override
-  _RestaurantScreenState createState() => _RestaurantScreenState();
+  RestaurantScreenState createState() => RestaurantScreenState();
 }
 
-class _RestaurantScreenState extends State<RestaurantScreen> {
-  final List<Restaurant> restaurants = [
-    Restaurant(
-      name: 'Restaurant A',
-      address: '123 Rue de la Paix',
-      imageUrl:
-          'https://yummaptest2.s3.eu-north-1.amazonaws.com/afrodisiac_paris_2ChIJF-O8i4Vv5kcRfqJBCNs3Awk/Afrodisiac+Paris+2.jpg',
-    ),
-    Restaurant(
-      name: 'Restaurant B',
-      address: '456 Avenue des Champs-Élysées',
-      imageUrl:
-          'https://yummaptest2.s3.eu-north-1.amazonaws.com/quai_nedyChIJ041eX3Fx5kcR0Kh5i1aJ4PI/Quai+Nedy.jpg',
-    ),
-    Restaurant(
-      name: 'Restaurant C',
-      address: '789 Boulevard Saint-Michel',
-      imageUrl:
-          'https://yummaptest2.s3.eu-north-1.amazonaws.com/ravioli_folieChIJIb6bdI9v5kcR6l5WUgZvcjM/Ravioli+Folie.jpg',
-    ),
-  ];
+class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
+  final List<Restaurant> restaurants = [];
   final Map<int, String> _cuisines = {
     1: 'Cuisine française',
     2: 'Cuisine coréenne',
@@ -50,76 +37,178 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
     19: 'Cuisine d\'Asie Centrale',
   };
 
-  void _showAddRestaurantDialog() {
+  late ApiService _apiService;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    AuthService authService = AuthService();
+    _apiService = ApiService();
+    _fetchRestaurants();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route != null) {
+      routeObserver.subscribe(this, route as PageRoute<dynamic>);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when this page is shown again after popping another page
+    _fetchRestaurants();
+  }
+
+  Future<void> _fetchRestaurants() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      int workspaceId = prefs.getInt('workspace_id') ?? 0;
+      List<Restaurant> fetchedRestaurants =
+          await _apiService.getRestaurants(workspaceId);
+      setState(() {
+        restaurants.clear();
+        restaurants.addAll(fetchedRestaurants);
+      });
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Erreur lors du chargement des restaurants: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 3,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showAddRestaurantDialog() async {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController addressController = TextEditingController();
-    int selectedCuisine = 1; // Default cuisine selected
+    int selectedCuisine = 1;
+    bool _isDialogLoading = false;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int workspaceId = prefs.getInt('workspace_id') ?? 0;
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Ajouter un restaurant'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom du restaurant',
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Ajouter un restaurant'),
+              content: _isDialogLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Nom du restaurant',
+                          ),
+                        ),
+                        TextField(
+                          controller: addressController,
+                          decoration: const InputDecoration(
+                            labelText: 'Adresse',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButton<int>(
+                          value: selectedCuisine,
+                          onChanged: (newValue) {
+                            setState(() {
+                              selectedCuisine = newValue!;
+                            });
+                          },
+                          items: _cuisines.entries.map((entry) {
+                            return DropdownMenuItem<int>(
+                              value: entry.key,
+                              child: Text(entry.value),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Annuler'),
                 ),
-              ),
-              TextField(
-                controller: addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Adresse',
+                ElevatedButton(
+                  onPressed: () async {
+                    final String name = nameController.text.trim();
+                    final String address = addressController.text.trim();
+                    if (name.isNotEmpty && address.isNotEmpty) {
+                      setState(() {
+                        _isDialogLoading = true;
+                      });
+
+                      try {
+                        await _apiService.addRestaurantToWorkspace(
+                          workspaceId: workspaceId,
+                          restaurantName: name,
+                          address: address,
+                          cuisine_id: selectedCuisine,
+                        );
+
+                        setState(() {});
+
+                        Fluttertoast.showToast(
+                          msg:
+                              "Restaurant ajouté avec succès. Actualisez la page",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 2,
+                          textColor: Colors.white,
+                          fontSize: 16.0,
+                        );
+
+                        Navigator.of(context).pop();
+                      } catch (e) {
+                        Fluttertoast.showToast(
+                          msg: "Erreur lors de l'ajout du restaurant: $e",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 3,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0,
+                        );
+                      } finally {
+                        setState(() {
+                          _isDialogLoading = false;
+                        });
+                      }
+                    }
+                  },
+                  child: const Text('Ajouter à la liste'),
                 ),
-              ),
-              const SizedBox(height: 8),
-              DropdownButton<int>(
-                value: selectedCuisine,
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedCuisine = newValue!;
-                  });
-                },
-                items: _cuisines.entries.map((entry) {
-                  return DropdownMenuItem<int>(
-                    value: entry.key,
-                    child: Text(entry.value),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final String name = nameController.text.trim();
-                final String address = addressController.text.trim();
-                if (name.isNotEmpty && address.isNotEmpty) {
-                  setState(() {
-                    restaurants.add(
-                      Restaurant(
-                        name: name,
-                        address: address,
-                        imageUrl:
-                            'https://via.placeholder.com/150', // Placeholder image URL
-                      ),
-                    );
-                  });
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Ajouter à la liste'),
-            ),
-          ],
+              ],
+            );
+          },
         );
       },
     );
@@ -140,109 +229,69 @@ class _RestaurantScreenState extends State<RestaurantScreen> {
           ),
         ],
       ),
-      body: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // Nombre de cartes par ligne
-          crossAxisSpacing: 8, // Espacement horizontal entre les cartes
-          mainAxisSpacing: 8, // Espacement vertical entre les cartes
-        ),
-        itemCount: restaurants.length,
-        itemBuilder: (context, index) {
-          return Stack(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
+      body: Stack(
+        children: [
+          GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: restaurants.length,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => RestaurantDetailScreen(
                           restaurant: restaurants[index]),
                     ),
                   );
+                  _fetchRestaurants();
                 },
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width /
-                      2.2, // Largeur de la carte
-                  child: Card(
-                    elevation: 4, // Élévation de la carte
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image:
-                                    NetworkImage(restaurants[index].imageUrl),
-                                fit: BoxFit.cover, // Remplissage de l'image
-                              ),
+                child: Card(
+                  elevation: 4,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage(restaurants[index].imageUrl),
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                restaurants[index].name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              restaurants[index].name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text(restaurants[index].address),
-                              // Commented out for simplicity
-                              // Row(
-                              //   children: [
-                              //     const Icon(Icons.star, color: Colors.amber),
-                              //     Text(restaurants[index].rating.toString()),
-                              //     const SizedBox(width: 5),
-                              //     Text(
-                              //       '(${restaurants[index].numReviews} reviews)',
-                              //       style: const TextStyle(
-                              //         fontStyle: FontStyle.italic,
-                              //       ),
-                              //     ),
-                              //   ],
-                              // ),
-                            ],
-                          ),
+                            ),
+                            Text(restaurants[index].address),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              Positioned(
-                top: 10,
-                left: 10,
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        restaurants.removeAt(index);
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black.withOpacity(0.5),
-                      ),
-                      child: const Icon(
-                        Icons.remove_circle_rounded,
-                        color: Colors.red,
-                        size: 25,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+              );
+            },
+          ),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
       ),
     );
   }

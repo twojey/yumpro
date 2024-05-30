@@ -1,9 +1,25 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yumpro/models/restaurant.dart';
+import 'package:yumpro/services/auth_service.dart';
 
 class ApiService {
   static const String BASE_URL =
       'https://x8ki-letl-twmt.n7.xano.io/api:LYxWamUX';
+  late final AuthService _authService = AuthService();
+
+  // Headers CORS
+  Map<String, String> _corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers':
+        'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+    'Access-Control-Allow-Credentials': 'true',
+  };
+
+  // Méthodes pour gérer les requêtes HTTP
 
   Future<String> login(String email, String password) async {
     final response = await _postRequest('/auth/login', {
@@ -15,15 +31,21 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getUser(String token) async {
-    final response = await _getRequest('/auth/me', token: token);
-    return response;
+    final response = await http.get(
+      Uri.parse('$BASE_URL/auth/me'),
+      headers: _headers(token),
+    );
+
+    return _handleResponse(response);
   }
 
-  Future<void> signup(String email, String password) async {
-    await _postRequest('/auth/signup', {
+  Future<String> signup(String email, String password) async {
+    final response = await _postRequest('/auth/signup', {
       'email': email,
       'password': password,
     });
+
+    return response['authToken'];
   }
 
   Future<Map<String, dynamic>> addCuisine(Map<String, dynamic> cuisine) async {
@@ -31,7 +53,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getCuisine(int cuisineId) async {
-    return await _getRequest('/cuisine/$cuisineId');
+    final response = await http.get(
+      Uri.parse('$BASE_URL/cuisine/$cuisineId'),
+      headers: _headers(null),
+    );
+
+    return _handleResponse(response);
   }
 
   Future<Map<String, dynamic>> editCuisine(
@@ -40,17 +67,25 @@ class ApiService {
   }
 
   Future<void> deleteCuisine(int cuisineId) async {
-    await _deleteRequest('/cuisine/$cuisineId');
+    await _deleteRequest('/cuisine/$cuisineId', {});
   }
 
   Future<List<dynamic>> getAllCuisines() async {
-    final response = await _getRequest('/cuisine');
-    return response['data'];
+    final response = await http.get(
+      Uri.parse('$BASE_URL/cuisine'),
+      headers: _headers(null),
+    );
+
+    return _handleResponse(response)['data'];
   }
 
   Future<List<dynamic>> getAllRestaurants() async {
-    final response = await _getRequest('/restaurants');
-    return response['data'];
+    final response = await http.get(
+      Uri.parse('$BASE_URL/restaurants'),
+      headers: _headers(null),
+    );
+
+    return _handleResponse(response)['data'];
   }
 
   Future<Map<String, dynamic>> addRestaurant(
@@ -58,12 +93,406 @@ class ApiService {
     return await _postRequest('/restaurants', restaurant);
   }
 
-  Future<void> updateUser(
-      String authToken, Map<String, dynamic> userData) async {
-    await _patchRequest('/auth/me', userData, token: authToken);
+  Future<void> updateUser(int userId, Map<String, dynamic> userData,
+      {String? token}) async {
+    final endpoint =
+        'https://x8ki-letl-twmt.n7.xano.io/api:LYxWamUX/user/$userId';
+
+    final response = await http.patch(
+      Uri.parse(endpoint),
+      headers: _headers(token),
+      body: jsonEncode(userData),
+    );
+
+    _handleResponse(response);
   }
 
-  // Methods to handle requests
+  Future<Map<String, dynamic>> joinWorkspace(
+      String alias, int userId, int code) async {
+    final requestData = {
+      'alias': alias,
+      'user_id': userId,
+      'code': code,
+    };
+
+    final response = await http.post(
+      Uri.parse('$BASE_URL/workspace/join'),
+      headers: _headers(null),
+      body: jsonEncode(requestData),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to join workspace: ${response.statusCode}');
+    }
+  }
+
+  // AWS Endpoints
+  static const String AWS_UPLOAD_URL =
+      'https://dmscenr32d.execute-api.eu-west-1.amazonaws.com/main';
+  static const String AWS_GET_PLACE_INFO_URL =
+      'https://eflk4mkrh5.execute-api.eu-west-1.amazonaws.com/main';
+  static const String AWS_GET_WORKSPACE_CODE_URL =
+      'https://m1tamh0es0.execute-api.eu-west-1.amazonaws.com/main';
+
+  Future<void> uploadUrlContentToS3(String s3Key, String url) async {
+    final response = await http.post(
+      Uri.parse(AWS_UPLOAD_URL),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode({'s3_key': s3Key, 'url': url}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to upload URL content to S3');
+    }
+  }
+
+  Future<Map<String, dynamic>> getPlacesInfos(
+      String name, String address) async {
+    var uri =
+        Uri.https('eflk4mkrh5.execute-api.eu-west-1.amazonaws.com', '/main');
+
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode({'name': name, 'address': address}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to get place infos');
+    }
+
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+    if (responseBody.containsKey('body')) {
+      responseBody = jsonDecode(responseBody['body']);
+    }
+
+    return responseBody;
+  }
+
+  final String apiUrl =
+      'https://rk2q32wk65.execute-api.eu-west-1.amazonaws.com/main';
+
+  Future<void> uploadProfilePhoto(String fileName, Uint8List imageData) async {
+    final prefs = await SharedPreferences.getInstance();
+    final workspacePlaceId = prefs.getString('workspace_place_id');
+    final userId = prefs.getInt('user_id');
+
+    if (workspacePlaceId == null || userId == null) {
+      throw Exception("Workspace Place ID or User ID is not available.");
+    }
+
+    final s3FileName = '$workspacePlaceId/$userId/profile.jpg';
+    final encodedImage = base64Encode(imageData);
+
+    final body = jsonEncode({
+      'file_name': s3FileName,
+      'image_data': encodedImage,
+    });
+
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to upload image: ${response.body}');
+    }
+  }
+
+  String getPhotoUrl(String photoReference) {
+    final uri = Uri.https(
+      'maps.googleapis.com',
+      '/maps/api/place/photo',
+      {
+        'maxwidth': '400',
+        'photoreference': photoReference,
+        'key': "AIzaSyBM05T0u8LoAKr2MtbTIjXtFmrU-06ye6U",
+      },
+    );
+
+    return uri.toString();
+  }
+
+  Future<String> getWorkspaceCode() async {
+    final response = await http.get(
+      Uri.parse(AWS_GET_WORKSPACE_CODE_URL),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to get workspace code');
+    }
+
+    print("Code : " + jsonDecode(response.body)['body'].toString());
+
+    return jsonDecode(response.body)['body'].toString();
+  }
+
+  Future<void> updateUserInfo({
+    required int userId,
+    required int workspaceId,
+    required String userName,
+    required bool isAnonymous,
+    required String userFirstName,
+    required String workspacePlaceId,
+    required String userPhotoUrl,
+  }) async {
+    final url = Uri.parse("$BASE_URL/workspace/user/$userId");
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    //userPhotoUrl = _authService.getUserInfo();
+
+    final body = jsonEncode({
+      'user_id': userId,
+      'workspace_id': workspaceId,
+      'user_name': userName,
+      'isAnonymous': isAnonymous,
+      'user_photo_url': userPhotoUrl,
+      'user_first_name': userFirstName,
+    });
+
+    final response = await http.patch(
+      url,
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      print("User info updated successfully.");
+    } else {
+      print("Failed to update user info: ${response.statusCode}");
+      print("Response: ${response.body}");
+    }
+  }
+
+  Future<List<Restaurant>> getRestaurants(int workspaceId) async {
+    final String? token = await _authService.getToken();
+    if (token == null) {
+      throw Exception('Token is null');
+    }
+
+    final response = await http.get(
+      Uri.parse('$BASE_URL/workspace/restaurants/$workspaceId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Restaurant.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load restaurants: ${response.statusCode}');
+    }
+  }
+
+  Future<String> createAlias(String restaurantName) async {
+    final Map<String, String> requestData = {
+      "restaurant_name": restaurantName,
+    };
+
+    final response = await http.post(
+      Uri.parse("https://ck2hfc0b4d.execute-api.eu-west-1.amazonaws.com/main"),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(requestData),
+    );
+
+    if (response.statusCode == 200) {
+      final String responseData = response.body;
+      print("Alias : " + jsonDecode(responseData)['body'].toString());
+      return jsonDecode(responseData)['body'].toString();
+    } else {
+      throw Exception("Failed to create alias: ${response.statusCode}");
+    }
+  }
+
+  Future<Map<String, dynamic>> postHotelInfo(
+      String name, String address, int teamSize) async {
+    try {
+      Map<String, dynamic> placeInfo = await getPlacesInfos(name, address);
+      String alias = await createAlias(name);
+      String code = await getWorkspaceCode();
+      String photoReference = placeInfo['photos'][0]['photo_reference'];
+      String photoUrl = getPhotoUrl(photoReference);
+      String s3Key = '${placeInfo['place_id']}/profile.jpg';
+      await uploadUrlContentToS3(s3Key, photoUrl);
+      String s3PhotoUrl =
+          'https://yummaptest2.s3.eu-north-1.amazonaws.com/$s3Key';
+      AuthService authService = AuthService();
+      Map<String, dynamic> userInfo = await authService.getUserInfo();
+      int userId = userInfo['user_id'];
+      Map<String, dynamic> hotelData = {
+        "name": placeInfo['name'],
+        "code": code,
+        "alias": alias,
+        "team": {"user_id": userId, "role": "admin", "status": "accepted"},
+        "placeID": placeInfo['place_id'],
+        "address": placeInfo['address'],
+        "phone": "",
+        "gps": placeInfo['geometry']['location'],
+        "photo_url": s3PhotoUrl,
+        "restaurants_placeID": [],
+        "team_size": teamSize
+      };
+
+      // Send the POST request
+      final Map<String, dynamic> response =
+          await _postRequest('/workspace', hotelData);
+
+      // Check if the request was successful and return the ID and placeID
+      if (response.containsKey('id') && response.containsKey('placeID')) {
+        int hotelId = response['id'];
+        String hotelPlaceID = response['placeID'];
+        String name_no_accent = response['name_no_accent'];
+        return {
+          'hotelId': hotelId,
+          'hotelPlaceID': hotelPlaceID,
+          'name_no_accent': name_no_accent,
+        };
+      } else {
+        throw Exception('Failed to post hotel info: ${response.toString()}');
+      }
+    } catch (e) {
+      print('Error posting hotel info: $e');
+      throw e;
+    }
+  }
+
+  Future<void> addRestaurantToWorkspace({
+    required int workspaceId,
+    required String restaurantName,
+    required int cuisine_id,
+    required String address,
+  }) async {
+    try {
+      Map<String, dynamic> placeInfo =
+          await getPlacesInfos(restaurantName, address);
+      String photoReference = placeInfo['photos'][0]['photo_reference'];
+      String photoUrl = getPhotoUrl(photoReference);
+      String s3Key = '${placeInfo['place_id']}/profile.jpg';
+      await uploadUrlContentToS3(s3Key, photoUrl);
+      String s3PhotoUrl =
+          'https://yummaptest2.s3.eu-north-1.amazonaws.com/$s3Key';
+      print(s3PhotoUrl);
+      Map<String, dynamic> restaurantData = {
+        "cuisine_id": cuisine_id,
+        "address": placeInfo['address'],
+        "restaurant_name": placeInfo['name'],
+        "picture_profile": s3PhotoUrl,
+        "place_id": placeInfo['place_id'],
+        "GPS_address": placeInfo['geometry']['location'],
+        "workspace_id": workspaceId,
+      };
+      await _postRequest('/workspace/restaurant', restaurantData);
+    } catch (e) {
+      print('Error adding restaurant to workspace: $e');
+      throw e;
+    }
+  }
+
+  // Nouvelles méthodes ajoutées
+
+  Future<List<dynamic>> getReviewsByRestaurant(
+      int restaurantId, int workspaceId) async {
+    // Construction de l'URL de l'endpoint
+    final String endpoint = '/review/restaurant/$restaurantId';
+
+    try {
+      // Envoi de la requête POST à Xano avec les données requises
+      final response = await http.post(
+        Uri.parse('$BASE_URL$endpoint'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "restaurant_id": restaurantId,
+          "workspace_id": workspaceId,
+        }),
+      );
+
+      // Vérification de la réponse
+      if (response.statusCode == 200) {
+        // Conversion de la réponse JSON en une liste dynamique
+        final List<dynamic> responseData = jsonDecode(response.body);
+        return responseData;
+      } else {
+        // En cas d'erreur, affichage du code d'erreur
+        throw Exception('Failed to get reviews: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Gestion des erreurs potentielles
+      throw Exception('Error fetching reviews: $e');
+    }
+  }
+
+  Future<void> deleteReview(int reviewId) async {
+    final String endpoint = '/review/$reviewId';
+
+    try {
+      final response = await http.delete(
+        Uri.parse('$BASE_URL$endpoint'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete review: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error deleting review: $e');
+    }
+  }
+
+  Future<void> removeRestaurantFromWorkspace({
+    required int workspaceId,
+    required String restaurantPlaceId,
+    required int userId,
+  }) async {
+    final String endpoint = '/workspace/restaurants/$restaurantPlaceId';
+
+    try {
+      final response = await http.delete(
+        Uri.parse('$BASE_URL$endpoint'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "workspace_id": workspaceId,
+          "restaurant_place_id": restaurantPlaceId,
+          "user_id": userId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to remove restaurant: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error removing restaurant: $e');
+    }
+  }
+
+  Future<List<dynamic>> getWorkspaceInvitations(int workspaceId) async {
+    final response = await http.get(
+      Uri.parse('$BASE_URL/workspace/invitations/$workspaceId'),
+      headers: _headers(null),
+    );
+
+    return jsonDecode(response.body) as List<dynamic>;
+  }
+
+  Future<List<dynamic>> getWorkspaceTeam(int workspaceId) async {
+    final response = await http.get(
+      Uri.parse('$BASE_URL/workspace/team/$workspaceId'),
+      headers: _headers(null),
+    );
+
+    return jsonDecode(response.body) as List<dynamic>;
+  }
+
+  // Méthodes HTTP génériques
+
   Future<Map<String, dynamic>> _postRequest(
       String endpoint, Map<String, dynamic> body,
       {String? token}) async {
@@ -72,15 +501,7 @@ class ApiService {
       headers: _headers(token),
       body: jsonEncode(body),
     );
-    return _handleResponse(response);
-  }
 
-  Future<Map<String, dynamic>> _getRequest(String endpoint,
-      {String? token}) async {
-    final response = await http.get(
-      Uri.parse('$BASE_URL$endpoint'),
-      headers: _headers(token),
-    );
     return _handleResponse(response);
   }
 
@@ -92,57 +513,54 @@ class ApiService {
       headers: _headers(token),
       body: jsonEncode(body),
     );
+
     return _handleResponse(response);
   }
 
-  Future<void> _deleteRequest(String endpoint, {String? token}) async {
+  Future<Map<String, dynamic>> _deleteRequest(
+      String endpoint, Map<String, dynamic> body,
+      {String? token}) async {
     final response = await http.delete(
       Uri.parse('$BASE_URL$endpoint'),
       headers: _headers(token),
+      body: jsonEncode(body),
     );
-    _handleResponse(response);
+
+    return _handleResponse(response);
   }
 
+  // Méthodes utilitaires
+
   Map<String, String> _headers(String? token) {
-    final headers = {'Content-Type': 'application/json; charset=UTF-8'};
+    final headers = {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Access-Control-Allow-Origin': '*',
+    };
+
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }
+
     return headers;
   }
 
-  Map<String, dynamic> _handleResponse(http.Response response) {
-    final responseData = jsonDecode(response.body);
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return responseData;
-    } else {
-      throw Exception(
-          '${response.statusCode}: ${responseData['message'] ?? 'An error occurred'}');
-    }
+  Future<Map<String, dynamic>> addReview(String comment, int rating, int userId,
+      int restaurantId, int workspaceId) async {
+    final reviewData = {
+      "comment": comment,
+      "rating": rating,
+      "user_id": userId,
+      "restaurants_id": restaurantId,
+      "workspace_id": workspaceId,
+    };
+    return await _postRequest('/review', reviewData);
   }
 
-  final String _baseUrl =
-      'https://dmscenr32d.execute-api.eu-west-1.amazonaws.com/main';
-
-  Future<void> uploadPhotoToS3(String photoUrl, String s3Key) async {
-    final Uri uri = Uri.parse(_baseUrl).replace(
-      queryParameters: {
-        'url': photoUrl,
-        's3_key': s3Key,
-      },
-    );
-
-    try {
-      final response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        print('Photo uploaded successfully: ${response.body}');
-      } else {
-        print(
-            'Failed to upload photo: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      print('Error uploading photo: $e');
+  Map<String, dynamic> _handleResponse(http.Response response) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Request failed: ${response.statusCode}');
     }
   }
 }

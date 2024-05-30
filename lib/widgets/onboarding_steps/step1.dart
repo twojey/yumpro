@@ -38,10 +38,10 @@ class _Step1State extends State<Step1> {
               value: 'hotel',
               child: Text('Compte hôtel'),
             ),
-            DropdownMenuItem(
-              value: 'influenceur',
-              child: Text('Créer un compte influenceur'),
-            ),
+            // DropdownMenuItem(
+            //   value: 'influenceur',
+            //   child: Text('Créer un compte influenceur'),
+            // ),
           ],
           decoration: const InputDecoration(
             labelText: 'Choisir le type de compte',

@@ -1,10 +1,10 @@
 class User {
-  final String firstName;
-  final String lastName;
+  String firstName;
+  String lastName;
   final String workspace;
   final String roleInWorkspace;
   final int numComments;
-  final String photoUrl;
+  String photoUrl;
 
   User({
     required this.firstName,
@@ -30,6 +30,37 @@ class User {
       roleInWorkspace: roleInWorkspace ?? this.roleInWorkspace,
       numComments: numComments ?? this.numComments,
       photoUrl: photoUrl ?? this.photoUrl,
+    );
+  }
+
+  // Setter pour le prénom (firstName)
+  void setFirstName(String value) {
+    firstName = value;
+  }
+
+  // Setter pour le nom de famille (lastName)
+  void setLastName(String value) {
+    lastName = value;
+  }
+
+  // Setter pour l'URL de la photo (photoUrl)
+  void setPhotoUrl(String value) {
+    photoUrl = value;
+  }
+
+  // Méthode factory pour créer une instance de User à partir d'un objet JSON
+  factory User.fromJson(Map<String, dynamic> json) {
+    String photoUrl = json['photo_url'];
+    if (photoUrl == null || photoUrl.isEmpty) {
+      photoUrl = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330';
+    }
+    return User(
+      firstName: json['first_name'],
+      lastName: json['name'],
+      workspace: 'Workspace',
+      roleInWorkspace: 'Role',
+      numComments: 0,
+      photoUrl: photoUrl,
     );
   }
 }

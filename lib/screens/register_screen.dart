@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:yumpro/services/api_service.dart'; // Importer ApiService
+import 'package:yumpro/services/api_service.dart';
+import 'package:yumpro/services/auth_service.dart'; // Importer ApiService
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,6 +15,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final ApiService _apiService = ApiService();
+  final AuthService _authService = AuthService();
 
   void _register() async {
     final String email = _emailController.text.trim().toLowerCase();
@@ -30,7 +32,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final response = await _apiService.signup(email, password);
       // Si l'inscription réussit, redirigez vers la page d'onboarding ou de login
-      Navigator.pushReplacementNamed(context, '/login');
+      await _authService.saveToken(response);
+
+      // Get user information after successful login
+      final userData = await _apiService.getUser(response);
+
+      // Save user information in SharedPreferences
+      await _authService.saveUserInfo(userData);
     } catch (error) {
       // Afficher une erreur si l'inscription échoue
       ScaffoldMessenger.of(context).showSnackBar(
@@ -52,6 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Register'),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),

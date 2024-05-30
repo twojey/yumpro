@@ -20,9 +20,11 @@ class _AddRestaurantModalState extends State<AddRestaurantModal> {
 
     if (name.isNotEmpty && address.isNotEmpty) {
       final newRestaurant = Restaurant(
+        id: 1,
         name: name,
         address: address,
         imageUrl: 'https://example.com/default_image.jpg',
+        place_id: "",
         // rating: 0.0,
         // numReviews: 0,
       );

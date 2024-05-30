@@ -4,8 +4,8 @@ import 'package:yumpro/screens/qr_code_screen.dart';
 import 'package:yumpro/screens/workspace_screen.dart';
 import 'package:yumpro/screens/settings_screen.dart';
 import 'package:yumpro/screens/invitations_screen.dart';
-import 'package:yumpro/screens/test_screen.dart'; // Import du test_screen.dart
 import 'package:yumpro/models/user.dart';
+import 'package:yumpro/services/auth_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,42 +18,80 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0; // Indice de l'écran sélectionné
 
   late User currentUser; // Utilisation de late pour une initialisation tardive
-
-  // Liste des écrans
   late List<Widget> _screens;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // Initialisation de currentUser
-    currentUser = User(
-      firstName: 'John',
-      lastName: 'Doe',
-      workspace: 'Workspace A',
-      roleInWorkspace: "employé",
-      numComments: 15,
-      photoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
-    );
-    // Initialisation de la liste des écrans
-    _screens = [
-      const RestaurantScreen(),
-      const InvitationsScreen(),
-      WorkspaceScreen(),
-      const QRCodeScreen(),
-      SettingsScreen(
-          user: currentUser), // Ajoutez d'autres écrans ici si nécessaire
-    ];
+    _initializeUser();
+  }
+
+  Future<void> _initializeUser() async {
+    final authService = AuthService();
+    final userInfo = await authService.getUserInfo();
+    String w_id = userInfo['workspace_place_id'];
+    int u_id = userInfo['user_id'];
+
+    setState(() {
+      currentUser = User(
+        firstName: userInfo['first_name'] ?? 'First Name',
+        lastName: userInfo['name'] ?? 'Last Name',
+        workspace: userInfo['workspace_id']?.toString() ?? 'Workspace',
+        roleInWorkspace:
+            "employé", // Remplacez par la valeur correcte si nécessaire
+        numComments: 15, // Remplacez par la valeur correcte si nécessaire
+        photoUrl:
+            'https://yummaptest2.s3.eu-north-1.amazonaws.com/$w_id/$u_id/profile.jpg',
+      );
+      _screens = [
+        const RestaurantScreen(),
+        const InvitationsScreen(),
+        WorkspaceScreen(),
+        const QRCodeScreen(),
+        SettingsScreen(), // Passez currentUser à SettingsScreen
+      ];
+      isLoading = false;
+    });
+  }
+
+  Future<void> _updateUserInfo() async {
+    final authService = AuthService();
+    final userInfo = await authService.getUserInfo();
+    String w_id = userInfo['workspace_place_id'];
+    int u_id = userInfo['user_id'];
+
+    setState(() {
+      currentUser = User(
+        firstName: userInfo['first_name'] ?? 'First Name',
+        lastName: userInfo['name'] ?? 'Last Name',
+        workspace: userInfo['workspace_id']?.toString() ?? 'Workspace',
+        roleInWorkspace:
+            "employé", // Remplacez par la valeur correcte si nécessaire
+        numComments: 15, // Remplacez par la valeur correcte si nécessaire
+        photoUrl:
+            'https://yummaptest2.s3.eu-north-1.amazonaws.com/$w_id/$u_id/profile.jpg',
+      );
+    });
   }
 
   // Méthode pour changer l'écran sélectionné
   void _selectScreen(int index) {
     setState(() {
       _selectedIndex = index;
+      if (_selectedIndex == 4) {
+        // Assurez-vous que l'index de SettingsScreen est 4
+        _updateUserInfo();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       body: Row(
         children: [
@@ -63,7 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.restaurant),
                 label: Text('Restaurants'),
               ),
-              // Nouvelle destination avec l'icône de message
               NavigationRailDestination(
                 icon: Icon(Icons.mail_rounded),
                 label: Text('Messages'),
@@ -72,7 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.person_add),
                 label: Text('Invitations'),
               ),
-
               NavigationRailDestination(
                 icon: Icon(Icons.qr_code),
                 label: Text('QR Code'),
@@ -81,23 +117,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.settings),
                 label: Text('Paramètres'),
               ),
-              // Ajout du bouton TestScreen après le bouton Paramètres
-              NavigationRailDestination(
-                icon: Icon(Icons.send),
-                label: Text('Test'),
-              ),
             ],
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
               if (index < _screens.length) {
                 _selectScreen(index);
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          TestScreen()), // Redirection vers TestScreen
-                );
               }
             },
             selectedIconTheme: const IconThemeData(

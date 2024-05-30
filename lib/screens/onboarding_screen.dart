@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:yumpro/services/api_service.dart';
+import 'package:yumpro/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yumpro/widgets/onboarding_steps/step1.dart';
 import 'package:yumpro/widgets/onboarding_steps/step2_hotel.dart';
 import 'package:yumpro/widgets/onboarding_steps/step_influ.dart';
 import 'package:yumpro/widgets/onboarding_steps/step3.dart';
-import 'package:yumpro/services/api_service.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -16,27 +18,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentStep = 0;
   bool _isHotelAccount = true;
   bool _showStep3 = true;
-  final Map<String, dynamic> _userData = {}; // Stocker les données de l'utilisateur
+  final Map<String, dynamic> _userData =
+      {}; // Stocker les données de l'utilisateur
   final ApiService _apiService = ApiService();
+  final AuthService _authService = AuthService();
 
-  // Méthode pour avancer à l'étape suivante
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserInformation();
+  }
+
+  Future<void> _fetchUserInformation() async {
+    try {
+      final String token = await _authService.getToken() as String;
+      final userData = await _apiService.getUser(token);
+
+      // Update _userData with relevant information from userData
+      setState(() {
+        _userData['user_id'] = userData['user_id'];
+        _userData['name'] = userData['name'];
+        _userData['first_name'] = userData['first_name'];
+        _userData['email'] = userData['email'];
+        _userData['workspace_id'] = userData['workspace_id'];
+      });
+    } catch (error) {
+      // Handle potential errors during user data retrieval
+      print('Failed to retrieve user information: $error');
+    }
+  }
+
   void _nextStep() {
     setState(() {
       _currentStep++;
     });
   }
 
-  // Méthode pour reculer à l'étape précédente
   void _previousStep() {
     setState(() {
       _currentStep--;
     });
   }
 
-  // Méthode pour terminer l'onboarding et naviguer vers l'écran d'accueil
   void _finishOnboarding(BuildContext context) async {
     try {
-      await _apiService.updateUser('your-auth-token', _userData);
+      // Save user data using the API
+      await _apiService.updateUser(_userData['id'], _userData);
+
+      // Navigate to the home screen
       Navigator.pushReplacementNamed(context, '/');
     } catch (e) {
       ScaffoldMessenger.of(context)
@@ -65,13 +94,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _handleStep3Completion(Map<String, dynamic> profileData) {
     _userData.addAll(profileData);
-    _nextStep();
+    _finishOnboarding(context);
   }
 
   List<Step> _buildSteps() {
     List<Step> steps = [
       Step(
-        title: const Text('Choisir compte hotel ou influenceur'),
+        title: const Text('Choisir le type de compte'),
         content: Step1(onCompletion: _handleStep1Completion),
         isActive: _currentStep == 0,
       ),
@@ -117,6 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Onboarding'),
+        automaticallyImplyLeading: false,
       ),
       body: Stepper(
         currentStep: _currentStep,
@@ -129,12 +159,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         },
         steps: _buildSteps(),
         controlsBuilder: (context, ControlsDetails controlsDetails) {
-          return _currentStep == _buildSteps().length - 1
-              ? ElevatedButton(
-                  onPressed: () => _finishOnboarding(context),
-                  child: const Text('Terminer'),
-                )
-              : const SizedBox();
+          if (_currentStep == _buildSteps().length - 1) {
+            return const SizedBox();
+          } else {
+            return SizedBox();
+          }
         },
       ),
     );

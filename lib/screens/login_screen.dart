@@ -24,14 +24,27 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final response = await _apiService.login(email, password);
 
-      // Sauvegarder le token après la connexion réussie
-      await _authService.saveToken(
-          response); // Utiliser AuthService pour sauvegarder le token
+      // Save token
+      await _authService.saveToken(response);
 
-      // Si la connexion réussit, rediriger vers la page d'onboarding
-      Navigator.pushReplacementNamed(context, '/onboarding');
+      // Get user information after successful login
+      final userData = await _apiService.getUser(response);
+
+      // Save user information in SharedPreferences
+      await _authService.saveUserInfo(userData);
+
+      // Vérification du champ workspace_id et redirection appropriée
+      if (userData.containsKey('workspace_id') &&
+          userData['workspace_id'] != null &&
+          userData['workspace_id'] != 0) {
+        // Rediriger vers "/"
+        Navigator.pushReplacementNamed(context, '/');
+      } else {
+        // Rediriger vers "/onboarding"
+        Navigator.pushReplacementNamed(context, '/onboarding');
+      }
     } catch (error) {
-      // Afficher une erreur si la connexion échoue
+      // Handle login error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login failed: $error')),
       );
@@ -50,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -85,12 +99,8 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20.0),
             CustomTextButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const RegisterScreen(),
-                  ),
-                );
+                // Naviguer vers la route de l'écran d'enregistrement
+                Navigator.pushReplacementNamed(context, '/register');
               },
               text: 'Register',
               textStyle: const TextStyle(color: Colors.blue),
