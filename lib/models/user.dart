@@ -51,7 +51,7 @@ class User {
   // Méthode factory pour créer une instance de User à partir d'un objet JSON
   factory User.fromJson(Map<String, dynamic> json) {
     String photoUrl = json['photo_url'];
-    if (photoUrl == null || photoUrl.isEmpty) {
+    if (photoUrl.isEmpty) {
       photoUrl = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330';
     }
     return User(

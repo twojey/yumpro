@@ -11,13 +11,6 @@ class ApiService {
   late final AuthService _authService = AuthService();
 
   // Headers CORS
-  Map<String, String> _corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers':
-        'Origin, X-Requested-With, Content-Type, Accept, Authorization',
-    'Access-Control-Allow-Credentials': 'true',
-  };
 
   // Méthodes pour gérer les requêtes HTTP
 
@@ -227,7 +220,7 @@ class ApiService {
       throw Exception('Failed to get workspace code');
     }
 
-    print("Code : " + jsonDecode(response.body)['body'].toString());
+    print("Code : ${jsonDecode(response.body)['body']}");
 
     return jsonDecode(response.body)['body'].toString();
   }
@@ -306,7 +299,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final String responseData = response.body;
-      print("Alias : " + jsonDecode(responseData)['body'].toString());
+      print("Alias : ${jsonDecode(responseData)['body']}");
       return jsonDecode(responseData)['body'].toString();
     } else {
       throw Exception("Failed to create alias: ${response.statusCode}");
@@ -350,18 +343,18 @@ class ApiService {
       if (response.containsKey('id') && response.containsKey('placeID')) {
         int hotelId = response['id'];
         String hotelPlaceID = response['placeID'];
-        String name_no_accent = response['name_no_accent'];
+        String nameNoAccent = response['name_no_accent'];
         return {
           'hotelId': hotelId,
           'hotelPlaceID': hotelPlaceID,
-          'name_no_accent': name_no_accent,
+          'name_no_accent': nameNoAccent,
         };
       } else {
         throw Exception('Failed to post hotel info: ${response.toString()}');
       }
     } catch (e) {
       print('Error posting hotel info: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -393,7 +386,7 @@ class ApiService {
       await _postRequest('/workspace/restaurant', restaurantData);
     } catch (e) {
       print('Error adding restaurant to workspace: $e');
-      throw e;
+      rethrow;
     }
   }
 

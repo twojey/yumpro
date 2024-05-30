@@ -24,11 +24,6 @@ class _Step3HotelState extends State<Step3Hotel> {
   }
 
   Future<void> _submitForm() async {
-    final profileData = {
-      'lastName': _lastNameController.text,
-      'firstName': _firstNameController.text,
-    };
-
     // Retrieve existing user data
     final userData = await AuthService().getUserInfo();
 
@@ -38,9 +33,9 @@ class _Step3HotelState extends State<Step3Hotel> {
     userData['anonymous_com'] = false;
     userData['user_id'] = userData['user_id'] as int;
     userData['id'] = userData['user_id'] as int;
-    String w_id = userData['workspace_place_id'];
+    String wId = userData['workspace_place_id'];
     userData['photo_url'] =
-        "https://yummaptest2.s3.eu-north-1.amazonaws.com/$w_id/profile.jpg";
+        "https://yummaptest2.s3.eu-north-1.amazonaws.com/$wId/profile.jpg";
 
     print("--- STEP 3 -----");
 

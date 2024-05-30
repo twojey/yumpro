@@ -8,8 +8,7 @@ import 'package:yumpro/services/auth_service.dart';
 class RestaurantDetailScreen extends StatefulWidget {
   final Restaurant restaurant;
 
-  const RestaurantDetailScreen({Key? key, required this.restaurant})
-      : super(key: key);
+  const RestaurantDetailScreen({super.key, required this.restaurant});
 
   @override
   _RestaurantDetailScreenState createState() => _RestaurantDetailScreenState();
@@ -32,7 +31,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
       final userInfo = await _authService.getUserInfo();
       List<dynamic>? response = await _apiService.getReviewsByRestaurant(
           widget.restaurant.id, userInfo['workspace_id'] ?? 4);
-      if (response != null && response.isNotEmpty) {
+      if (response.isNotEmpty) {
         setState(() {
           reviews = response
               .map((data) {
@@ -267,8 +266,7 @@ class ReviewItem extends StatelessWidget {
   final Review review;
   final VoidCallback onDelete;
 
-  const ReviewItem({Key? key, required this.review, required this.onDelete})
-      : super(key: key);
+  const ReviewItem({super.key, required this.review, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -319,8 +317,7 @@ class AddReviewForm extends StatefulWidget {
   final Function(String comment, int rating) onAddReview;
 
   const AddReviewForm(
-      {Key? key, required this.restaurantId, required this.onAddReview})
-      : super(key: key);
+      {super.key, required this.restaurantId, required this.onAddReview});
 
   @override
   _AddReviewFormState createState() => _AddReviewFormState();

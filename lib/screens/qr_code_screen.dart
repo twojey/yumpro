@@ -6,7 +6,7 @@ import 'package:flutter/services.dart'; // Import clipboard
 import 'package:yumpro/services/auth_service.dart'; // Import AuthService
 
 class QRCodeScreen extends StatefulWidget {
-  const QRCodeScreen({Key? key}) : super(key: key);
+  const QRCodeScreen({super.key});
 
   @override
   _QRCodeScreenState createState() => _QRCodeScreenState();
@@ -30,7 +30,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
       nameNoAccent = nameNoAccent.replaceAll(
           ' ', '_'); // Remplacer les espaces par des underscores
 
-      final url = 'https://api2.branch.io/v1/url';
+      const url = 'https://api2.branch.io/v1/url';
       final payload = {
         "branch_key": "key_live_dsgNrw6vwN75bbP0bZIpFfcdvFi1dN9o",
         "channel": "yumpro",
@@ -65,7 +65,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
       );
 
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
+        json.decode(response.body);
         setState(() {
           _branchUrl = "https://yummap.app.link/$nameNoAccent";
         });

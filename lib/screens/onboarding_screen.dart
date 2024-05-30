@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yumpro/services/api_service.dart';
 import 'package:yumpro/services/auth_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yumpro/widgets/onboarding_steps/step1.dart';
 import 'package:yumpro/widgets/onboarding_steps/step2_hotel.dart';
 import 'package:yumpro/widgets/onboarding_steps/step_influ.dart';
@@ -162,7 +161,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           if (_currentStep == _buildSteps().length - 1) {
             return const SizedBox();
           } else {
-            return SizedBox();
+            return const SizedBox();
           }
         },
       ),

@@ -6,7 +6,7 @@ import 'package:yumpro/services/api_service.dart';
 class Step2Hotel extends StatefulWidget {
   final Function(Map<String, dynamic>) onNextPressed;
 
-  const Step2Hotel({Key? key, required this.onNextPressed}) : super(key: key);
+  const Step2Hotel({super.key, required this.onNextPressed});
 
   @override
   _Step2HotelState createState() => _Step2HotelState();
@@ -167,13 +167,13 @@ class _Step2HotelState extends State<Step2Hotel> {
           .then((prefs) => prefs.getInt('workspace_id')),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         }
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         }
         if (snapshot.data != null && snapshot.data != 0) {
-          return Card(
+          return const Card(
             child: ListTile(
               leading: Icon(Icons.work),
               title: Text('Vous faites partie d\'un workspace'),
@@ -256,7 +256,7 @@ class _Step2HotelState extends State<Step2Hotel> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _submitCreate,
                       child: _isLoading
-                          ? CircularProgressIndicator()
+                          ? const CircularProgressIndicator()
                           : const Text('Créer le workspace'),
                     ),
                   ],
@@ -279,7 +279,7 @@ class _Step2HotelState extends State<Step2Hotel> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _submitJoin,
                       child: _isLoading
-                          ? CircularProgressIndicator()
+                          ? const CircularProgressIndicator()
                           : const Text('Rejoindre'),
                     ),
                   ],

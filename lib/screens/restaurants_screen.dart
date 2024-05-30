@@ -4,12 +4,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yumpro/models/restaurant.dart';
 import 'package:yumpro/screens/restaurant_detail_screen.dart';
 import 'package:yumpro/services/api_service.dart';
-import 'package:yumpro/services/auth_service.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 class RestaurantScreen extends StatefulWidget {
-  const RestaurantScreen({Key? key}) : super(key: key);
+  const RestaurantScreen({super.key});
 
   @override
   RestaurantScreenState createState() => RestaurantScreenState();
@@ -43,7 +42,6 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
-    AuthService authService = AuthService();
     _apiService = ApiService();
     _fetchRestaurants();
   }
@@ -104,7 +102,7 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController addressController = TextEditingController();
     int selectedCuisine = 1;
-    bool _isDialogLoading = false;
+    bool isDialogLoading = false;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int workspaceId = prefs.getInt('workspace_id') ?? 0;
@@ -116,7 +114,7 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
           builder: (context, setState) {
             return AlertDialog(
               title: const Text('Ajouter un restaurant'),
-              content: _isDialogLoading
+              content: isDialogLoading
                   ? const Center(child: CircularProgressIndicator())
                   : Column(
                       mainAxisSize: MainAxisSize.min,
@@ -163,7 +161,7 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
                     final String address = addressController.text.trim();
                     if (name.isNotEmpty && address.isNotEmpty) {
                       setState(() {
-                        _isDialogLoading = true;
+                        isDialogLoading = true;
                       });
 
                       try {
@@ -199,7 +197,7 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
                         );
                       } finally {
                         setState(() {
-                          _isDialogLoading = false;
+                          isDialogLoading = false;
                         });
                       }
                     }

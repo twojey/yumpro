@@ -61,9 +61,9 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
         title: const Text('Invitations'),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : invitations.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'Aucune invitation disponible',
                     style: TextStyle(fontSize: 18, color: Colors.grey),

@@ -30,8 +30,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _initializeUser() async {
     final authService = AuthService();
     final userInfo = await authService.getUserInfo();
-    String w_id = userInfo['workspace_place_id'];
-    int u_id = userInfo['user_id'];
+    String wId = userInfo['workspace_place_id'];
+    int uId = userInfo['user_id'];
 
     setState(() {
       currentUser = User(
@@ -42,14 +42,14 @@ class _HomeScreenState extends State<HomeScreen> {
             "employé", // Remplacez par la valeur correcte si nécessaire
         numComments: 15, // Remplacez par la valeur correcte si nécessaire
         photoUrl:
-            'https://yummaptest2.s3.eu-north-1.amazonaws.com/$w_id/$u_id/profile.jpg',
+            'https://yummaptest2.s3.eu-north-1.amazonaws.com/$wId/$uId/profile.jpg',
       );
       _screens = [
         const RestaurantScreen(),
         const InvitationsScreen(),
-        WorkspaceScreen(),
+        const WorkspaceScreen(),
         const QRCodeScreen(),
-        SettingsScreen(), // Passez currentUser à SettingsScreen
+        const SettingsScreen(), // Passez currentUser à SettingsScreen
       ];
       isLoading = false;
     });
@@ -58,8 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _updateUserInfo() async {
     final authService = AuthService();
     final userInfo = await authService.getUserInfo();
-    String w_id = userInfo['workspace_place_id'];
-    int u_id = userInfo['user_id'];
+    String wId = userInfo['workspace_place_id'];
+    int uId = userInfo['user_id'];
 
     setState(() {
       currentUser = User(
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
             "employé", // Remplacez par la valeur correcte si nécessaire
         numComments: 15, // Remplacez par la valeur correcte si nécessaire
         photoUrl:
-            'https://yummaptest2.s3.eu-north-1.amazonaws.com/$w_id/$u_id/profile.jpg',
+            'https://yummaptest2.s3.eu-north-1.amazonaws.com/$wId/$uId/profile.jpg',
       );
     });
   }

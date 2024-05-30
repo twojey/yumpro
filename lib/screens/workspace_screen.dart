@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:yumpro/models/user.dart';
-import 'package:yumpro/models/workspace.dart';
 import 'package:yumpro/widgets/modal_invite_user.dart';
 import 'package:yumpro/services/auth_service.dart';
 import 'package:yumpro/services/api_service.dart';
 
 class WorkspaceScreen extends StatefulWidget {
-  const WorkspaceScreen({Key? key}) : super(key: key);
+  const WorkspaceScreen({super.key});
 
   @override
   _WorkspaceScreenState createState() => _WorkspaceScreenState();

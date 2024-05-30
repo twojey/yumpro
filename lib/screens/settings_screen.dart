@@ -1,4 +1,3 @@
-import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -84,10 +83,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         textColor: Colors.white,
         fontSize: 16.0,
       );
-      String w_id = _userInfo['workspace_place_id'];
-      String u_id = _userInfo['user_id'].toString();
+      String wId = _userInfo['workspace_place_id'];
+      String uId = _userInfo['user_id'].toString();
       _userInfo['photo_url'] =
-          'https://yummaptest2.s3.eu-north-1.amazonaws.com/$w_id/$u_id/profile.jpg';
+          'https://yummaptest2.s3.eu-north-1.amazonaws.com/$wId/$uId/profile.jpg';
       _authService.saveUserInfo(_userInfo);
     } catch (e) {
       Fluttertoast.showToast(
@@ -178,7 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final defaultPhotoUrl =
+    const defaultPhotoUrl =
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330';
 
     return Scaffold(
@@ -249,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   TextField(
                     controller: _lastNameController,
                     decoration: InputDecoration(
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                       hintText: 'Nom',
                       hintStyle: TextStyle(color: Colors.grey[600]),
                     ),
@@ -263,7 +262,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   TextField(
                     controller: _firstNameController,
                     decoration: InputDecoration(
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                       hintText: 'Prénom',
                       hintStyle: TextStyle(color: Colors.grey[600]),
                     ),
@@ -292,7 +291,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                       style: ButtonStyle(
                         backgroundColor:
-                            MaterialStateProperty.all<Color>(Colors.red),
+                            WidgetStateProperty.all<Color>(Colors.red),
                       ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment
