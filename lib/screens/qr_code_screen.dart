@@ -89,6 +89,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('QR Code for Yummap'),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

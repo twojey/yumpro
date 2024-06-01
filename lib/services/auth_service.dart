@@ -55,6 +55,22 @@ class AuthService {
       //await prefs.remove('workspace_place_id');
     }
 
+    if (userData.containsKey('workspace') &&
+        userData['workspace'].containsKey('name_no_accent')) {
+      await prefs.setString(
+          'name_no_accent', userData['workspace']['name_no_accent']);
+    } else {
+      //await prefs.remove('workspace_place_id');
+    }
+
+    if (userData.containsKey('workspace') &&
+        userData['workspace'].containsKey('anonymous_com')) {
+      await prefs.setBool(
+          'anonymous_com', userData['workspace']['anonymous_com']);
+    } else {
+      //await prefs.remove('workspace_place_id');
+    }
+
     if (userData.containsKey('anonymous_com')) {
       await prefs.setBool('anonymous_com', userData['anonymous_com']);
     }

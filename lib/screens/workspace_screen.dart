@@ -3,9 +3,10 @@ import 'package:yumpro/models/user.dart';
 import 'package:yumpro/widgets/modal_invite_user.dart';
 import 'package:yumpro/services/auth_service.dart';
 import 'package:yumpro/services/api_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class WorkspaceScreen extends StatefulWidget {
-  const WorkspaceScreen({super.key});
+  const WorkspaceScreen({Key? key});
 
   @override
   _WorkspaceScreenState createState() => _WorkspaceScreenState();
@@ -37,9 +38,30 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     }
   }
 
-  void _inviteUser(String email) {
-    // Add your logic to handle email invitation here
-    print('Invitation sent to $email');
+  void _inviteUser(String email) async {
+    try {
+      final userInfo = await _authService.getUserInfo();
+      await _apiService.sendInvitationEmail(
+          userInfo['workspace_id'], userInfo['user_id'], email);
+      print('Invitation envoyée à $email');
+      Fluttertoast.showToast(
+        msg: 'Invitation sent to $email',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+    } catch (e) {
+      print('Error sending invitation: $e');
+      Fluttertoast.showToast(
+        msg: 'Error sending invitation: $e',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      // Gérer l'erreur si nécessaire
+    }
   }
 
   @override
@@ -47,6 +69,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Workspace'),
+        automaticallyImplyLeading: false,
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -112,7 +135,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                                   ),
                                 )
                               else
-                                Text(user.roleInWorkspace),
+                                const Text("Membre"),
                             ],
                           ),
                         ),

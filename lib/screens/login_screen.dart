@@ -4,7 +4,7 @@ import 'package:yumpro/services/api_service.dart';
 import 'package:yumpro/services/auth_service.dart'; // Importer AuthService
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -19,6 +19,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     final String email = _emailController.text.trim().toLowerCase();
     final String password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
 
     try {
       final response = await _apiService.login(email, password);

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:yumpro/screens/login_screen.dart';
 import 'package:yumpro/services/api_service.dart';
-import 'package:yumpro/services/auth_service.dart'; // Importer ApiService
+import 'package:yumpro/services/auth_service.dart'; // Importez l'écran de connexion
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({Key? key}) : super(key: key);
 
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
@@ -14,8 +15,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  final ApiService _apiService = ApiService();
   final AuthService _authService = AuthService();
+  final ApiService _apiService = ApiService();
 
   void _register() async {
     final String email = _emailController.text.trim().toLowerCase();
@@ -94,6 +95,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ElevatedButton(
               onPressed: _register,
               child: const Text('Register'),
+            ),
+            const SizedBox(height: 20.0),
+            // TextButton pour revenir à l'écran de connexion
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => LoginScreen(),
+                  ),
+                );
+              },
+              child: const Text('Already have an account? Sign in'),
             ),
           ],
         ),

@@ -32,11 +32,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadUserInfo() async {
-    print("load...");
     final userInfo = await _authService.getUserInfo();
     _userInfo = await _authService.getUserInfo();
     _anonymousComments = _userInfo['anonymous_com'];
-    print(_userInfo);
     setState(() {
       _user = User(
         firstName: userInfo['first_name'] ?? '',
@@ -183,6 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -268,15 +267,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Voir son rôle dans le workspace:',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Rôle: ${_user!.roleInWorkspace}',
-                    style: const TextStyle(fontSize: 16),
-                  ),
                   const Spacer(),
                   SizedBox(
                     width: 180,

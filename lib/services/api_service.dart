@@ -196,6 +196,15 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getWorkspaceInfo(int workspaceId) async {
+    final response = await http.get(
+      Uri.parse('$BASE_URL/workspace/$workspaceId'),
+      headers: _headers(null),
+    );
+
+    return _handleResponse(response);
+  }
+
   String getPhotoUrl(String photoReference) {
     final uri = Uri.https(
       'maps.googleapis.com',
@@ -310,7 +319,7 @@ class ApiService {
       String name, String address, int teamSize) async {
     try {
       Map<String, dynamic> placeInfo = await getPlacesInfos(name, address);
-      String alias = await createAlias(name);
+      String alias = await createAlias(placeInfo['name']);
       String code = await getWorkspaceCode();
       String photoReference = placeInfo['photos'][0]['photo_reference'];
       String photoUrl = getPhotoUrl(photoReference);
@@ -358,7 +367,7 @@ class ApiService {
     }
   }
 
-  Future<void> addRestaurantToWorkspace({
+  Future<Restaurant> addRestaurantToWorkspace({
     required int workspaceId,
     required String restaurantName,
     required int cuisine_id,
@@ -383,10 +392,58 @@ class ApiService {
         "GPS_address": placeInfo['geometry']['location'],
         "workspace_id": workspaceId,
       };
-      await _postRequest('/workspace/restaurant', restaurantData);
+
+      // Effectuer la requête POST pour ajouter le restaurant
+      Map<String, dynamic> response =
+          await _postRequest('/workspace/restaurant', restaurantData);
+
+      // Créer une instance de Restaurant à partir de la réponse
+      Restaurant restaurant = Restaurant(
+        id: response['id'], // Assurez-vous que l'API retourne un identifiant
+        name: response['name'],
+        address: response['address_str'],
+        imageUrl: response['picture_profile'],
+        place_id: response['placeId'],
+      );
+
+      // Retourner l'instance de Restaurant
+      return restaurant;
     } catch (e) {
       print('Error adding restaurant to workspace: $e');
       rethrow;
+    }
+  }
+
+  Future<void> sendInvitationEmail(
+      int workspaceId, int userId, String recipientEmail) async {
+    final String apiURL =
+        'https://opdbf3s8hc.execute-api.eu-west-1.amazonaws.com/main';
+
+    final Map<String, dynamic> payload = {
+      'workspace_id': workspaceId,
+      'user_id': userId,
+      'recipient_email': recipientEmail
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiURL),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200) {
+        print("Lambda function executed successfully.");
+        print("Response:");
+        print(jsonDecode(response.body));
+      } else {
+        print(
+            "Failed to execute Lambda function. Status code: ${response.statusCode}");
+        print("Response:");
+        print(response.body);
+      }
+    } catch (e) {
+      print("Error occurred while making the request: $e");
     }
   }
 

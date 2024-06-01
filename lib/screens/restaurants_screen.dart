@@ -165,18 +165,21 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
                       });
 
                       try {
-                        await _apiService.addRestaurantToWorkspace(
+                        final newRestaurant =
+                            await _apiService.addRestaurantToWorkspace(
                           workspaceId: workspaceId,
                           restaurantName: name,
                           address: address,
                           cuisine_id: selectedCuisine,
                         );
 
-                        setState(() {});
+                        setState(() {
+                          isDialogLoading = false;
+                          restaurants.add(newRestaurant);
+                        });
 
                         Fluttertoast.showToast(
-                          msg:
-                              "Restaurant ajouté avec succès. Actualisez la page",
+                          msg: "Restaurant ajouté avec succès.",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.CENTER,
                           timeInSecForIosWeb: 2,
@@ -195,7 +198,7 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
                           textColor: Colors.white,
                           fontSize: 16.0,
                         );
-                      } finally {
+
                         setState(() {
                           isDialogLoading = false;
                         });
@@ -217,6 +220,7 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Votre liste de recommandation'),
+        automaticallyImplyLeading: false,
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),

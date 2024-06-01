@@ -59,6 +59,7 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Invitations'),
+        automaticallyImplyLeading: false,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
