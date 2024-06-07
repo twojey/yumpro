@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:yumpro/screens/landing_screen.dart';
 import 'package:yumpro/screens/login_screen.dart';
 import 'package:yumpro/screens/register_screen.dart';
 import 'package:yumpro/screens/home_screen.dart';
 import 'package:yumpro/screens/onboarding_screen.dart';
-import 'package:yumpro/services/auth_service.dart'; // Importer AuthService
+import 'package:yumpro/services/auth_service.dart';
+import 'package:yumpro/services/mixpanel_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AnalyticsManager().init(
+      '1f791bb9a5e27c54a6f0443e425a143d'); // Remplacez 'YOUR_MIXPANEL_TOKEN' par votre token Mixpanel
   runApp(YumProApp());
 }
 
 class YumProApp extends StatelessWidget {
-  YumProApp({super.key});
+  YumProApp({Key? key}) : super(key: key);
+
   final AuthService _authService = AuthService();
 
   @override
@@ -54,6 +60,7 @@ class YumProApp extends StatelessWidget {
             const LoginScreen(), // Ajouter la route pour l'écran de connexion
         '/register': (context) => const RegisterScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
+        '/landing': (context) => LandingPage(), // Ajouter cette ligne
       },
     );
   }

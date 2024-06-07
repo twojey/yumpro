@@ -111,6 +111,15 @@ class _LoginScreenState extends State<LoginScreen> {
               text: 'Register',
               textStyle: const TextStyle(color: Colors.blue),
             ),
+            const SizedBox(height: 20.0),
+            CustomTextButton(
+              onPressed: () {
+                // Naviguer vers la route de l'écran d'enregistrement
+                Navigator.pushReplacementNamed(context, '/landing');
+              },
+              text: 'LANDING',
+              textStyle: const TextStyle(color: Colors.blue),
+            ),
           ],
         ),
       ),
