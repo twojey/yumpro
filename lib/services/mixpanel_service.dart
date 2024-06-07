@@ -1,4 +1,5 @@
 import 'package:mixpanel_flutter/mixpanel_flutter.dart';
+import 'package:flutter/foundation.dart'; // Importez la bibliothèque foundation pour accéder à kReleaseMode
 
 class AnalyticsManager {
   static final AnalyticsManager _instance = AnalyticsManager._internal();
@@ -16,7 +17,11 @@ class AnalyticsManager {
   }
 
   void trackEvent(String eventName, [Map<String, dynamic>? properties]) {
-    _mixpanel.track(eventName, properties: properties);
+    if (kReleaseMode) {
+      _mixpanel.track(eventName, properties: properties);
+    } else {
+      print('Event "$eventName" not tracked in debug mode');
+    }
   }
 
   void setUserProperties(Map<String, dynamic> properties) {
