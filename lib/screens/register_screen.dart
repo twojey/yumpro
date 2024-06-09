@@ -5,7 +5,7 @@ import 'package:yumpro/services/auth_service.dart';
 import 'package:yumpro/services/mixpanel_service.dart'; // Importez l'écran de connexion
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
@@ -62,55 +62,81 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
         automaticallyImplyLeading: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        title: Row(
           children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            TextField(
-              controller: _confirmPasswordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Confirm Password',
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: _register,
-              child: const Text('Register'),
-            ),
-            const SizedBox(height: 20.0),
-            // TextButton pour revenir à l'écran de connexion
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => LoginScreen(),
-                  ),
-                );
-              },
-              child: const Text('Already have an account? Sign in'),
-            ),
+            Image.asset('assets/images/logo.png', height: 40),
+            const SizedBox(width: 10),
+            const Text('Yummap Pro - Enregistrement'),
           ],
+        ),
+      ),
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 600),
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Mot de passe',
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              TextField(
+                controller: _confirmPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Confirmez le mot de passe',
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 400),
+                  child: ElevatedButton(
+                    onPressed: _register,
+                    child: const Text(
+                      'Créer mon compte',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w700),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      textStyle: const TextStyle(fontSize: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 20,
+                        horizontal: 32,
+                      ),
+                      backgroundColor: Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              // TextButton pour revenir à l'écran de connexion
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
+                },
+                child: const Text('Vous avez déjà un compte ? Connectez-vous'),
+              ),
+            ],
+          ),
         ),
       ),
     );

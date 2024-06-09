@@ -6,7 +6,7 @@ import 'package:yumpro/services/api_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class WorkspaceScreen extends StatefulWidget {
-  const WorkspaceScreen({Key? key});
+  const WorkspaceScreen({super.key});
 
   @override
   _WorkspaceScreenState createState() => _WorkspaceScreenState();

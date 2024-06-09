@@ -416,7 +416,7 @@ class ApiService {
 
   Future<void> sendInvitationEmail(
       int workspaceId, int userId, String recipientEmail) async {
-    final String apiURL =
+    const String apiURL =
         'https://opdbf3s8hc.execute-api.eu-west-1.amazonaws.com/main';
 
     final Map<String, dynamic> payload = {

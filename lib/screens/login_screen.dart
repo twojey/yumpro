@@ -4,7 +4,7 @@ import 'package:yumpro/services/api_service.dart';
 import 'package:yumpro/services/auth_service.dart'; // Importer AuthService
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -68,59 +68,79 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
         automaticallyImplyLeading: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        title: Row(
           children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: _login,
-              style: ElevatedButton.styleFrom(
-                textStyle: const TextStyle(fontSize: 16),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
+            Image.asset('assets/images/logo.png', height: 40),
+            const SizedBox(width: 10),
+            const Text('Yummap Pro'),
+          ],
+        ),
+      ),
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 600),
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
                 ),
               ),
-              child: const Text('Login'),
-            ),
-            const SizedBox(height: 20.0),
-            CustomTextButton(
-              onPressed: () {
-                // Naviguer vers la route de l'écran d'enregistrement
-                Navigator.pushReplacementNamed(context, '/register');
-              },
-              text: 'Register',
-              textStyle: const TextStyle(color: Colors.blue),
-            ),
-            const SizedBox(height: 20.0),
-            CustomTextButton(
-              onPressed: () {
-                // Naviguer vers la route de l'écran d'enregistrement
-                Navigator.pushReplacementNamed(context, '/landing');
-              },
-              text: 'LANDING',
-              textStyle: const TextStyle(color: Colors.blue),
-            ),
-          ],
+              const SizedBox(height: 20.0),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 400),
+                  child: ElevatedButton(
+                    onPressed: _login,
+                    style: ElevatedButton.styleFrom(
+                      textStyle: const TextStyle(fontSize: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 20,
+                        horizontal: 32,
+                      ),
+                      backgroundColor: Colors.orange.shade800,
+                    ),
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              CustomTextButton(
+                onPressed: () {
+                  // Naviguer vers la route de l'écran d'enregistrement
+                  Navigator.pushReplacementNamed(context, '/register');
+                },
+                text: "Si vous n'avez pas encore de compte, cliquez ici",
+                textStyle: const TextStyle(color: Colors.blue),
+              ),
+              const SizedBox(height: 20.0),
+              CustomTextButton(
+                onPressed: () {
+                  // Naviguer vers la route de l'écran d'enregistrement
+                  Navigator.pushReplacementNamed(context, '/landing');
+                },
+                text: 'LANDING',
+                textStyle: const TextStyle(color: Colors.blue),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -15,7 +15,7 @@ void main() async {
 }
 
 class YumProApp extends StatelessWidget {
-  YumProApp({Key? key}) : super(key: key);
+  YumProApp({super.key});
 
   final AuthService _authService = AuthService();
 
@@ -60,7 +60,7 @@ class YumProApp extends StatelessWidget {
             const LoginScreen(), // Ajouter la route pour l'écran de connexion
         '/register': (context) => const RegisterScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
-        '/landing': (context) => LandingPage(), // Ajouter cette ligne
+        '/landing': (context) => const LandingPage(), // Ajouter cette ligne
       },
     );
   }

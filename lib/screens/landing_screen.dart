@@ -3,6 +3,8 @@ import 'package:video_player/video_player.dart';
 import 'package:yumpro/services/mixpanel_service.dart';
 
 class LandingPage extends StatefulWidget {
+  const LandingPage({super.key});
+
   @override
   _LandingPageState createState() => _LandingPageState();
 }
@@ -37,17 +39,17 @@ class _LandingPageState extends State<LandingPage> {
       body: Center(
         child: Container(
           width: 800,
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 30,
               ),
-              Text(
+              const Text(
                 'Invitation au restaurant',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               Container(
@@ -59,7 +61,7 @@ class _LandingPageState extends State<LandingPage> {
                             aspectRatio: _controller.value.aspectRatio,
                             child: VideoPlayer(_controller),
                           )
-                        : CircularProgressIndicator(),
+                        : const CircularProgressIndicator(),
                     Positioned(
                       left: 16,
                       bottom: 16,
@@ -90,7 +92,7 @@ class _LandingPageState extends State<LandingPage> {
                   ],
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 50,
               ),
               ElevatedButton(
@@ -104,7 +106,7 @@ class _LandingPageState extends State<LandingPage> {
                   // Action à effectuer lors de l'appui sur le bouton
                   Navigator.pushNamed(context, '/register');
                 },
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('Accéder au service'),
