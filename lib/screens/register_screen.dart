@@ -90,7 +90,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'Mot de passe',
+                  labelText: 'Créez un mot de passe',
                 ),
               ),
               const SizedBox(height: 20.0),
