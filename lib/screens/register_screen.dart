@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yumpro/screens/login_screen.dart';
+import 'package:yumpro/screens/onboarding_screen.dart';
 import 'package:yumpro/services/api_service.dart';
 import 'package:yumpro/services/auth_service.dart';
 import 'package:yumpro/services/mixpanel_service.dart'; // Importez l'écran de connexion
@@ -42,6 +43,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // Save user information in SharedPreferences
       await _authService.saveUserInfo(userData);
       AnalyticsManager().trackEvent("New user");
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const OnboardingScreen(),
+        ),
+      );
     } catch (error) {
       // Afficher une erreur si l'inscription échoue
       ScaffoldMessenger.of(context).showSnackBar(
