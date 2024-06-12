@@ -18,7 +18,7 @@ class _LandingPageState extends State<LandingPage> {
   void initState() {
     super.initState();
     _controller = VideoPlayerController.network(
-      'https://yummap.s3.eu-north-1.amazonaws.com/yumpro/IntroYumproDef.mp4',
+      'https://yummap.s3.eu-north-1.amazonaws.com/yumpro/snapvid-yumpro-intro.mp4',
     )..initialize().then((_) {
         setState(
             () {}); // Met à jour l'interface utilisateur lorsque la vidéo est prête à être lue
