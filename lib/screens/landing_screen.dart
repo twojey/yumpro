@@ -55,7 +55,7 @@ class _LandingPageState extends State<LandingPage> {
                 height: 30,
               ),
               const Text(
-                'Invitation au restaurant',
+                'Invitation au restaurant 🍽️',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(
@@ -115,6 +115,8 @@ class _LandingPageState extends State<LandingPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange.shade800, // couleur du bouton
                   foregroundColor: Colors.white, // couleur du texte
+                  padding: EdgeInsets.symmetric(
+                      vertical: 16, horizontal: 20), // padding vertical
                 ),
                 onPressed: () {
                   // Suivi de l'événement lorsque l'utilisateur clique sur "Accéder au service"
@@ -122,13 +124,18 @@ class _LandingPageState extends State<LandingPage> {
                   // Action à effectuer lors de l'appui sur le bouton
                   Navigator.pushNamed(context, '/register');
                 },
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Accéder au service'),
+                    Text(
+                      'Accéder au service',
+                      style: TextStyle(
+                        fontSize: 25, // taille du texte
+                        fontWeight: FontWeight.bold, // poids de la police
+                      ),
+                    ),
                     SizedBox(
                       width: 8,
-                      height: 40,
                     ),
                     Icon(Icons.arrow_forward),
                   ],
