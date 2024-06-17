@@ -60,8 +60,8 @@ class YumProApp extends StatelessWidget {
             const LoginScreen(), // Ajouter la route pour l'écran de connexion
         '/register': (context) => const RegisterScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
-        '/landing': (context) => const LandingPage(), // Ajouter cette ligne
-        '/invitation': (context) => const LandingPage(),
+        '/invitation': (context) => const LandingPage(), // Ajouter cette ligne
+        '/landing': (context) => const LandingPage(),
       },
     );
   }
