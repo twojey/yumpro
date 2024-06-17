@@ -27,8 +27,9 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
       final userInfo = await _authService.getUserInfo();
       final workspaceId = userInfo['workspace_id'] ?? 1;
       String nameNoAccent = userInfo['name_no_accent'] ?? '';
-      nameNoAccent = nameNoAccent.replaceAll(
-          ' ', '_'); // Remplacer les espaces par des underscores
+      nameNoAccent = nameNoAccent
+          .replaceAll(' ', '_')
+          .toLowerCase(); // Remplacer les espaces par des underscores
 
       const url = 'https://api2.branch.io/v1/url';
       final payload = {
