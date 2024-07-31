@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yumpro/models/invitation.dart';
 import 'package:yumpro/services/api_service.dart';
+import 'package:yumpro/utils/appcolors.dart';
 
 class InvitationsScreen extends StatefulWidget {
   const InvitationsScreen({super.key});
@@ -11,7 +12,6 @@ class InvitationsScreen extends StatefulWidget {
 }
 
 class _InvitationsScreenState extends State<InvitationsScreen> {
-  // Liste des invitations
   List<Invitation> invitations = [];
   bool isLoading = true;
 
@@ -62,7 +62,10 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
         automaticallyImplyLeading: false,
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+            ))
           : invitations.isEmpty
               ? const Center(
                   child: Text(
@@ -87,9 +90,13 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
                       ),
                       onTap: () {
                         setState(() {
-                          // Mettre à jour le statut de l'invitation
                           invitations[index].isRead = true;
                         });
+                        Navigator.pushNamed(
+                          context,
+                          '/invitation-details',
+                          arguments: invitation,
+                        );
                       },
                     );
                   },

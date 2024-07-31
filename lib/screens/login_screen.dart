@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:yumpro/widgets/custom_text_button.dart';
 import 'package:yumpro/services/api_service.dart';
 import 'package:yumpro/services/auth_service.dart'; // Importer AuthService
+import 'package:yumpro/utils/custom_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: Center(
         child: Container(
-          constraints: BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(maxWidth: 600),
           padding: const EdgeInsets.all(20.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -99,37 +99,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: 'Mot de passe',
                 ),
               ),
-              const SizedBox(height: 20.0),
+              const SizedBox(height: 50.0),
               Center(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 400),
-                  child: ElevatedButton(
-                    onPressed: _login,
-                    style: ElevatedButton.styleFrom(
-                      textStyle: const TextStyle(fontSize: 16),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 20,
-                        horizontal: 32,
-                      ),
-                      backgroundColor: Colors.orange.shade800,
-                    ),
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: CustomWidgets.primaryButton(
+                        text: "Login", onPressed: _login)),
               ),
               const SizedBox(height: 20.0),
-              CustomTextButton(
-                onPressed: () {
-                  // Naviguer vers la route de l'écran d'enregistrement
-                  Navigator.pushReplacementNamed(context, '/register');
-                },
-                text: "Si vous n'avez pas encore de compte, cliquez ici",
-                textStyle: const TextStyle(color: Colors.blue),
-              ),
+              CustomWidgets.textButton(
+                  onPressed: () {
+                    // Naviguer vers la route de l'écran d'enregistrement
+                    Navigator.pushReplacementNamed(context, '/register');
+                  },
+                  text: "Si vous n'avez pas encore de compte, cliquez ici"),
               const SizedBox(height: 20.0),
             ],
           ),

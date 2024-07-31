@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:yumpro/services/mixpanel_service.dart';
+import 'package:yumpro/utils/appcolors.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -70,7 +71,10 @@ class _LandingPageState extends State<LandingPage> {
                             aspectRatio: _controller.value.aspectRatio,
                             child: VideoPlayer(_controller),
                           )
-                        : const CircularProgressIndicator(),
+                        : const CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(AppColors.accent),
+                          ),
                     if (_controller.value.isInitialized)
                       Positioned(
                         left: 16,
@@ -115,7 +119,7 @@ class _LandingPageState extends State<LandingPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange.shade800, // couleur du bouton
                   foregroundColor: Colors.white, // couleur du texte
-                  padding: EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                       vertical: 16, horizontal: 20), // padding vertical
                 ),
                 onPressed: () {
@@ -124,7 +128,7 @@ class _LandingPageState extends State<LandingPage> {
                   // Action à effectuer lors de l'appui sur le bouton
                   Navigator.pushNamed(context, '/register');
                 },
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(

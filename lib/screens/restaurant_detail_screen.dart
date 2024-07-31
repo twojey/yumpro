@@ -4,6 +4,8 @@ import 'package:yumpro/models/review.dart';
 import 'package:yumpro/models/user.dart';
 import 'package:yumpro/services/api_service.dart';
 import 'package:yumpro/services/auth_service.dart';
+import 'package:yumpro/utils/appcolors.dart';
+import 'package:yumpro/utils/custom_widgets.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
   final Restaurant restaurant;
@@ -192,58 +194,66 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16.0),
-                      child: Image.network(
-                        widget.restaurant.imageUrl,
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildSectionTitle('Adresse:'),
-                    Text(
-                      widget.restaurant.address,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildSectionTitle('Note:'),
-                    Row(
+          ? const Center(
+              child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+            ))
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 800),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.star, color: Colors.amber),
-                        const SizedBox(width: 4),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16.0),
+                          child: Image.network(
+                            widget.restaurant.imageUrl,
+                            width: double.infinity,
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSectionTitle('Adresse:'),
                         Text(
-                          averageRating.toStringAsFixed(1),
+                          widget.restaurant.address,
                           style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSectionTitle('Note:'),
+                        Row(
+                          children: [
+                            const Icon(Icons.star, color: AppColors.accent),
+                            const SizedBox(width: 4),
+                            Text(
+                              averageRating.toStringAsFixed(1),
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSectionTitle('Ajouter une critique:'),
+                        const SizedBox(height: 8),
+                        AddReviewForm(
+                          restaurantId: widget.restaurant.id,
+                          onAddReview: _addReview,
+                        ),
+                        const SizedBox(height: 26),
+                        _buildSectionTitle('Commentaires:'),
+                        const SizedBox(height: 8),
+                        // Affichage des commentaires
+                        ...reviews.map(
+                          (review) => ReviewItem(
+                            review: review,
+                            onDelete: () => _deleteReview(review.id),
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    _buildSectionTitle('Ajouter une critique:'),
-                    const SizedBox(height: 8),
-                    AddReviewForm(
-                      restaurantId: widget.restaurant.id,
-                      onAddReview: _addReview,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildSectionTitle('Commentaires:'),
-                    const SizedBox(height: 8),
-                    // Affichage des commentaires
-                    ...reviews.map(
-                      (review) => ReviewItem(
-                        review: review,
-                        onDelete: () => _deleteReview(review.id),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -348,6 +358,8 @@ class _AddReviewFormState extends State<AddReviewForm> {
                   });
                 },
                 label: _rating.toString(),
+                activeColor: AppColors.accent, // Couleur de la partie active
+                inactiveColor: Colors.grey, // Couleur de la partie inactive
               ),
             ),
           ],
@@ -364,32 +376,30 @@ class _AddReviewFormState extends State<AddReviewForm> {
           ),
           maxLines: 3,
         ),
-        const SizedBox(height: 8),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-          ),
-          onPressed: () async {
-            final String comment = _commentController.text.trim();
-            if (comment.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Veuillez entrer un commentaire.'),
-                ),
-              );
-              return;
-            }
+        const SizedBox(height: 12),
+        SizedBox(
+          width: 300,
+          child: CustomWidgets.primaryButton(
+            text: "Ajouter la critique",
+            onPressed: () async {
+              final String comment = _commentController.text.trim();
+              if (comment.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Veuillez entrer un commentaire.'),
+                  ),
+                );
+                return;
+              }
 
-            widget.onAddReview(comment, _rating.round());
-            _commentController.clear();
-            setState(() {
-              _rating = 0.0;
-            });
-          },
-          child: const Text('Ajouter critique'),
-        ),
+              widget.onAddReview(comment, _rating.round());
+              _commentController.clear();
+              setState(() {
+                _rating = 0.0;
+              });
+            },
+          ),
+        )
       ],
     );
   }

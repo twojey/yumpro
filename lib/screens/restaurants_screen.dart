@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yumpro/models/restaurant.dart';
 import 'package:yumpro/screens/restaurant_detail_screen.dart';
 import 'package:yumpro/services/api_service.dart';
+import 'package:yumpro/utils/appcolors.dart';
+import 'package:yumpro/utils/custom_widgets.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
@@ -149,64 +151,120 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
                       ],
                     ),
               actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Annuler'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    final String name = nameController.text.trim();
-                    final String address = addressController.text.trim();
-                    if (name.isNotEmpty && address.isNotEmpty) {
-                      setState(() {
-                        isDialogLoading = true;
-                      });
-
-                      try {
-                        final newRestaurant =
-                            await _apiService.addRestaurantToWorkspace(
-                          workspaceId: workspaceId,
-                          restaurantName: name,
-                          address: address,
-                          cuisine_id: selectedCuisine,
-                        );
-
-                        setState(() {
-                          isDialogLoading = false;
-                          restaurants.add(newRestaurant);
-                        });
-
-                        Fluttertoast.showToast(
-                          msg: "Restaurant ajouté avec succès.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 2,
-                          textColor: Colors.white,
-                          fontSize: 16.0,
-                        );
-
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
                         Navigator.of(context).pop();
-                      } catch (e) {
-                        Fluttertoast.showToast(
-                          msg: "Erreur lors de l'ajout du restaurant: $e",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 3,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 16.0,
-                        );
+                      },
+                      child: const Text('Annuler'),
+                    ),
+                    CustomWidgets.primaryButton(
+                      text: "Ajouter à la liste",
+                      onPressed: () async {
+                        final String name = nameController.text.trim();
+                        final String address = addressController.text.trim();
+                        if (name.isNotEmpty && address.isNotEmpty) {
+                          setState(() {
+                            isDialogLoading = true;
+                          });
 
-                        setState(() {
-                          isDialogLoading = false;
-                        });
-                      }
-                    }
-                  },
-                  child: const Text('Ajouter à la liste'),
+                          try {
+                            final newRestaurant =
+                                await _apiService.addRestaurantToWorkspace(
+                              workspaceId: workspaceId,
+                              restaurantName: name,
+                              address: address,
+                              cuisine_id: selectedCuisine,
+                            );
+
+                            setState(() {
+                              isDialogLoading = false;
+                              restaurants.add(newRestaurant);
+                            });
+
+                            Fluttertoast.showToast(
+                              msg: "Restaurant ajouté avec succès.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.CENTER,
+                              timeInSecForIosWeb: 2,
+                              textColor: Colors.white,
+                              fontSize: 16.0,
+                            );
+
+                            Navigator.of(context).pop();
+                          } catch (e) {
+                            Fluttertoast.showToast(
+                              msg: "Erreur lors de l'ajout du restaurant: $e",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 3,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              fontSize: 16.0,
+                            );
+
+                            setState(() {
+                              isDialogLoading = false;
+                            });
+                          }
+                        }
+                      },
+                    )
+                  ],
                 ),
+                // ElevatedButton(
+                //   onPressed: () async {
+                //     final String name = nameController.text.trim();
+                //     final String address = addressController.text.trim();
+                //     if (name.isNotEmpty && address.isNotEmpty) {
+                //       setState(() {
+                //         isDialogLoading = true;
+                //       });
+
+                //       try {
+                //         final newRestaurant =
+                //             await _apiService.addRestaurantToWorkspace(
+                //           workspaceId: workspaceId,
+                //           restaurantName: name,
+                //           address: address,
+                //           cuisine_id: selectedCuisine,
+                //         );
+
+                //         setState(() {
+                //           isDialogLoading = false;
+                //           restaurants.add(newRestaurant);
+                //         });
+
+                //         Fluttertoast.showToast(
+                //           msg: "Restaurant ajouté avec succès.",
+                //           toastLength: Toast.LENGTH_SHORT,
+                //           gravity: ToastGravity.CENTER,
+                //           timeInSecForIosWeb: 2,
+                //           textColor: Colors.white,
+                //           fontSize: 16.0,
+                //         );
+
+                //         Navigator.of(context).pop();
+                //       } catch (e) {
+                //         Fluttertoast.showToast(
+                //           msg: "Erreur lors de l'ajout du restaurant: $e",
+                //           toastLength: Toast.LENGTH_SHORT,
+                //           gravity: ToastGravity.BOTTOM,
+                //           timeInSecForIosWeb: 3,
+                //           backgroundColor: Colors.red,
+                //           textColor: Colors.white,
+                //           fontSize: 16.0,
+                //         );
+
+                //         setState(() {
+                //           isDialogLoading = false;
+                //         });
+                //       }
+                //     }
+                //   },
+                //   child: const Text('Ajouter à la liste'),
+                // ),
               ],
             );
           },
@@ -223,12 +281,14 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
         automaticallyImplyLeading: false,
         actions: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: _showAddRestaurantDialog,
-              child: const Text('Ajouter'),
-            ),
-          ),
+              padding: const EdgeInsets.all(8.0),
+              child: CustomWidgets.primaryButton(
+                  text: "Ajouter", onPressed: _showAddRestaurantDialog)
+              // ElevatedButton(
+              //   onPressed: _showAddRestaurantDialog,
+              //   child: const Text('Ajouter'),
+              // ),
+              ),
         ],
       ),
       body: Stack(
@@ -291,7 +351,9 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
           ),
           if (_isLoading)
             const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+              ),
             ),
         ],
       ),

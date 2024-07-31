@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yumpro/services/api_service.dart';
+import 'package:yumpro/utils/appcolors.dart';
 
 class Step2Hotel extends StatefulWidget {
   final Function(Map<String, dynamic>) onNextPressed;
@@ -167,7 +168,9 @@ class _Step2HotelState extends State<Step2Hotel> {
           .then((prefs) => prefs.getInt('workspace_id')),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+          );
         }
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -256,7 +259,10 @@ class _Step2HotelState extends State<Step2Hotel> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _submitCreate,
                       child: _isLoading
-                          ? const CircularProgressIndicator()
+                          ? const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.accent),
+                            )
                           : const Text('Créer le workspace'),
                     ),
                   ],
@@ -279,7 +285,10 @@ class _Step2HotelState extends State<Step2Hotel> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _submitJoin,
                       child: _isLoading
-                          ? const CircularProgressIndicator()
+                          ? const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.accent),
+                            )
                           : const Text('Rejoindre'),
                     ),
                   ],

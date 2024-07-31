@@ -3,7 +3,8 @@ import 'package:yumpro/screens/login_screen.dart';
 import 'package:yumpro/screens/onboarding_screen.dart';
 import 'package:yumpro/services/api_service.dart';
 import 'package:yumpro/services/auth_service.dart';
-import 'package:yumpro/services/mixpanel_service.dart'; // Importez l'écran de connexion
+import 'package:yumpro/services/mixpanel_service.dart';
+import 'package:yumpro/utils/custom_widgets.dart'; // Importez l'écran de connexion
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -79,7 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       body: Center(
         child: Container(
-          constraints: BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(maxWidth: 600),
           padding: const EdgeInsets.all(20.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -107,40 +108,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   labelText: 'Confirmez le mot de passe',
                 ),
               ),
-              const SizedBox(height: 20.0),
+              const SizedBox(height: 50.0),
               Center(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 400),
-                  child: ElevatedButton(
-                    onPressed: _register,
-                    child: const Text(
-                      'Créer mon compte',
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w700),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      textStyle: const TextStyle(fontSize: 16),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 20,
-                        horizontal: 32,
-                      ),
-                      backgroundColor: Colors.black87,
-                    ),
-                  ),
-                ),
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: CustomWidgets.secondaryButton(
+                        text: "Créer mon compte", onPressed: _register)),
               ),
               const SizedBox(height: 20.0),
               // TextButton pour revenir à l'écran de connexion
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
-                },
-                child: const Text('Vous avez déjà un compte ? Connectez-vous'),
-              ),
+              CustomWidgets.textButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                    );
+                  },
+                  text: 'Vous avez déjà un compte ? Connectez-vous'),
             ],
           ),
         ),

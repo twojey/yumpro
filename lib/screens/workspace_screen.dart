@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yumpro/models/user.dart';
+import 'package:yumpro/utils/appcolors.dart';
+import 'package:yumpro/utils/custom_widgets.dart';
 import 'package:yumpro/widgets/modal_invite_user.dart';
 import 'package:yumpro/services/auth_service.dart';
 import 'package:yumpro/services/api_service.dart';
@@ -72,19 +74,30 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         automaticallyImplyLeading: false,
         actions: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return InviteUserModal(onInvite: _inviteUser);
-                  },
-                );
-              },
-              child: const Text("Invite to Team"),
-            ),
-          ),
+              padding: const EdgeInsets.all(8.0),
+              child: CustomWidgets.primaryButton(
+                text: "Inviter dans l'équipe",
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return InviteUserModal(onInvite: _inviteUser);
+                    },
+                  );
+                },
+              )
+              // ElevatedButton(
+              //   onPressed: () {
+              //     showDialog(
+              //       context: context,
+              //       builder: (BuildContext context) {
+              //         return InviteUserModal(onInvite: _inviteUser);
+              //       },
+              //     );
+              //   },
+              //   child: const Text("Inviter dans l'équiper"),
+              // ),
+              ),
         ],
       ),
       body: users.isNotEmpty
@@ -145,7 +158,10 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                 );
               },
             )
-          : const Center(child: CircularProgressIndicator()),
+          : const Center(
+              child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+            )),
     );
   }
 }

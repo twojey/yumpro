@@ -6,6 +6,7 @@ import 'package:yumpro/models/user.dart';
 import 'package:yumpro/screens/login_screen.dart';
 import 'package:yumpro/services/api_service.dart';
 import 'package:yumpro/services/auth_service.dart';
+import 'package:yumpro/utils/appcolors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -191,7 +192,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+            ))
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(

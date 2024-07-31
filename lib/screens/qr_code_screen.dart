@@ -3,7 +3,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/services.dart'; // Import clipboard
-import 'package:yumpro/services/auth_service.dart'; // Import AuthService
+import 'package:yumpro/services/auth_service.dart';
+import 'package:yumpro/utils/appcolors.dart'; // Import AuthService
 
 class QRCodeScreen extends StatefulWidget {
   const QRCodeScreen({super.key});
@@ -50,7 +51,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
         },
         "android": {
           "\$android_url":
-              "https://play.google.com/store/apps/details?id=com.domain.yummap&hl=en_US",
+              "https://play.google.com/store/apps/details?id=com.domain.yummap",
         },
         "desktop": {
           "\$desktop_url": "https://yourapp.com",
@@ -100,7 +101,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'QR code for downloading Yummap',
+                      'QR code pour vos clients',
                       style: TextStyle(fontSize: 18),
                     ),
                     const SizedBox(height: 10),
@@ -127,7 +128,9 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                     ),
                   ],
                 )
-              : const CircularProgressIndicator(),
+              : const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                ),
         ),
       ),
     );
