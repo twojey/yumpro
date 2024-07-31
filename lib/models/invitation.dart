@@ -24,7 +24,7 @@ class Invitation {
       createdAt: json['created_at'],
       restaurantsId: json['restaurants_id'],
       workspaceId: json['workspace_id'],
-      isRead: false,
+      isRead: json['read'],
       restaurant: Restaurant.fromJson(json['restaurant']),
     );
   }

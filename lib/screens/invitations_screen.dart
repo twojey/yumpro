@@ -54,6 +54,14 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
     }
   }
 
+  Future<void> _markInvitationAsRead(int invitationId) async {
+    try {
+      await ApiService().markInvitationAsRead(invitationId);
+    } catch (e) {
+      print("Erreur lors de la mise à jour de l'invitation: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,10 +96,13 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
                               : FontWeight.bold,
                         ),
                       ),
-                      onTap: () {
-                        setState(() {
-                          invitations[index].isRead = true;
-                        });
+                      onTap: () async {
+                        if (!invitation.isRead) {
+                          await _markInvitationAsRead(invitation.id);
+                          setState(() {
+                            invitations[index].isRead = true;
+                          });
+                        }
                         Navigator.pushNamed(
                           context,
                           '/invitation-details',

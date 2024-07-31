@@ -62,55 +62,53 @@ class _LandingPageState extends State<LandingPage> {
               const SizedBox(
                 height: 20,
               ),
-              Container(
-                child: Stack(
-                  alignment: Alignment.bottomLeft,
-                  children: [
-                    _controller.value.isInitialized
-                        ? AspectRatio(
-                            aspectRatio: _controller.value.aspectRatio,
-                            child: VideoPlayer(_controller),
-                          )
-                        : const CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(AppColors.accent),
-                          ),
-                    if (_controller.value.isInitialized)
-                      Positioned(
-                        left: 16,
-                        bottom: 16,
-                        child: FloatingActionButton(
-                          backgroundColor: Colors.orange.shade800,
-                          foregroundColor: Colors.white,
-                          onPressed: () {
-                            setState(() {
-                              if (!_playClicked) {
-                                // Suivi de l'événement lorsque l'utilisateur clique sur Play pour la première fois
-                                AnalyticsManager().trackEvent('play_clicked');
-                                _playClicked = true;
-                              }
-                              if (_isVideoEnded) {
-                                _controller.seekTo(Duration.zero);
-                                _controller.play();
-                                _isVideoEnded = false;
-                              } else if (_controller.value.isPlaying) {
-                                _controller.pause();
-                              } else {
-                                _controller.play();
-                              }
-                            });
-                          },
-                          child: Icon(
-                            _isVideoEnded
-                                ? Icons.replay
-                                : _controller.value.isPlaying
-                                    ? Icons.pause
-                                    : Icons.play_arrow,
-                          ),
+              Stack(
+                alignment: Alignment.bottomLeft,
+                children: [
+                  _controller.value.isInitialized
+                      ? AspectRatio(
+                          aspectRatio: _controller.value.aspectRatio,
+                          child: VideoPlayer(_controller),
+                        )
+                      : const CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(AppColors.accent),
+                        ),
+                  if (_controller.value.isInitialized)
+                    Positioned(
+                      left: 16,
+                      bottom: 16,
+                      child: FloatingActionButton(
+                        backgroundColor: Colors.orange.shade800,
+                        foregroundColor: Colors.white,
+                        onPressed: () {
+                          setState(() {
+                            if (!_playClicked) {
+                              // Suivi de l'événement lorsque l'utilisateur clique sur Play pour la première fois
+                              AnalyticsManager().trackEvent('play_clicked');
+                              _playClicked = true;
+                            }
+                            if (_isVideoEnded) {
+                              _controller.seekTo(Duration.zero);
+                              _controller.play();
+                              _isVideoEnded = false;
+                            } else if (_controller.value.isPlaying) {
+                              _controller.pause();
+                            } else {
+                              _controller.play();
+                            }
+                          });
+                        },
+                        child: Icon(
+                          _isVideoEnded
+                              ? Icons.replay
+                              : _controller.value.isPlaying
+                                  ? Icons.pause
+                                  : Icons.play_arrow,
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
               const SizedBox(
                 height: 20,

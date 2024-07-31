@@ -532,6 +532,36 @@ class ApiService {
     return jsonDecode(response.body) as List<dynamic>;
   }
 
+  // Nouvelle méthode pour marquer une invitation comme lue
+  Future<void> markInvitationAsRead(int invitationId, {String? token}) async {
+    final requestData = {'read': true, 'consumed': false};
+    final endpoint = '/invitation/$invitationId';
+    await http.patch(Uri.parse(BASE_URL + endpoint),
+        headers: _headers(null), body: jsonEncode(requestData));
+
+    //await _patchRequest(endpoint, {'read': true}, token: token);
+  }
+
+  Future<Map<String, dynamic>> consumeInvitation(int invitationId, int code,
+      {String? token}) async {
+    final requestData = {'read': true, 'consumed': true, 'code': code};
+    final endpoint = '/invitation/$invitationId';
+    final response = await http.patch(
+      Uri.parse(BASE_URL + endpoint),
+      headers: _headers(token),
+      body: jsonEncode(requestData),
+    );
+
+    if (response.statusCode != 200) {
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+      final String errorMessage = responseBody['message'] ?? 'Unknown error';
+      print("Erreur sur l'invitation: $errorMessage");
+      throw Exception("$errorMessage");
+    }
+
+    return jsonDecode(response.body);
+  }
+
   Future<List<dynamic>> getWorkspaceTeam(int workspaceId) async {
     final response = await http.get(
       Uri.parse('$BASE_URL/workspace/team/$workspaceId'),
