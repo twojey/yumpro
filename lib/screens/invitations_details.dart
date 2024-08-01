@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_html_to_pdf/flutter_html_to_pdf.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:printing/printing.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -20,6 +21,12 @@ class InvitationDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Formate la date d'expiration au format dd MM yyyy
+    String formatExpirationDate(DateTime date) {
+      final DateFormat formatter = DateFormat('dd MMM yyyy');
+      return formatter.format(date);
+    }
+
     Future<Uint8List> generateQrCode(String data) async {
       final qrValidationResult = QrValidator.validate(
         data: data,
@@ -29,8 +36,9 @@ class InvitationDetailsScreen extends StatelessWidget {
       final qrCode = qrValidationResult.qrCode;
       final painter = QrPainter.withQr(
         qr: qrCode!,
-        color: const Color(0xFF000000),
         gapless: true,
+        eyeStyle: QrEyeStyle(color: Color(0xFF000000)),
+        dataModuleStyle: QrDataModuleStyle(color: Color(0xFF000000)),
       );
       final image = await painter.toImage(200);
       final byteData = await image.toByteData(format: ImageByteFormat.png);
@@ -38,6 +46,9 @@ class InvitationDetailsScreen extends StatelessWidget {
     }
 
     Future<void> generateAndDownloadPDF() async {
+      DateTime expirationDate = DateTime.fromMillisecondsSinceEpoch(
+          invitation.dateExpiration ?? DateTime.now().millisecondsSinceEpoch);
+
       if (kIsWeb) {
         final doc = pw.Document();
         final qrCodeData =
@@ -61,8 +72,10 @@ class InvitationDetailsScreen extends StatelessWidget {
                   pw.Text('Adresse: ${invitation.restaurant.address}',
                       textAlign: pw.TextAlign.center),
                   pw.SizedBox(height: 10),
-                  pw.Text(
-                      'Note: ${invitation.restaurant.rating} (${invitation.restaurant.numReviews} avis)',
+                  pw.Text('Code : ${invitation.code}',
+                      textAlign: pw.TextAlign.center),
+                  pw.SizedBox(height: 10),
+                  pw.Text('Expire le : ${formatExpirationDate(expirationDate)}',
                       textAlign: pw.TextAlign.center),
                   pw.SizedBox(height: 20),
                   pw.Image(qrCodeImage, width: 200, height: 200),
@@ -77,42 +90,43 @@ class InvitationDetailsScreen extends StatelessWidget {
       } else {
         final htmlContent = """
         <html>
-  <head>
-    <style>
-      body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 20px;
-        font-family: Arial, sans-serif;
-      }
-      .spacer {
-        margin: 20px 0;
-      }
-      img {
-        border-radius: 50%;
-        border: 4px solid #ff4081; /* Utilisation de la couleur accent d'AppColors */
-        width: 200px;
-        height: 200px;
-      }
-      .qr-code {
-        margin-top: 20px;
-      }
-      h1 {
-        text-align: center;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Détails de l'invitation</h1>
-    <p class="spacer">Vous êtes invité à manger chez ${invitation.restaurant.name}</p>
-    <img src="${invitation.restaurant.imageUrl}" alt="Restaurant" class="spacer" />
-    <p class="spacer">Adresse: ${invitation.restaurant.address}</p>
-    <p class="spacer">Note: ${invitation.restaurant.rating} (${invitation.restaurant.numReviews} avis)</p>
-    <p class="qr-code"><img src="https://api.qrserver.com/v1/create-qr-code/?data=${yummapBaseURL}invitation/${invitation.id}&size=200x200" alt="QR Code" /></p>
-  </body>
-</html>
+          <head>
+            <style>
+              body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 20px;
+                font-family: Arial, sans-serif;
+              }
+              .spacer {
+                margin: 20px 0;
+              }
+              img {
+                border-radius: 50%;
+                border: 4px solid #ff4081;
+                width: 200px;
+                height: 200px;
+              }
+              .qr-code {
+                margin-top: 20px;
+              }
+              h1 {
+                text-align: center;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Détails de l'invitation</h1>
+            <p class="spacer">Vous êtes invité à manger chez ${invitation.restaurant.name}</p>
+            <img src="${invitation.restaurant.imageUrl}" alt="Restaurant" class="spacer" />
+            <p class="spacer">Adresse: ${invitation.restaurant.address}</p>
+            <p class="spacer">CODE : ${invitation.code}</p>
+            <p class="spacer">Expire le : ${formatExpirationDate(expirationDate)}</p>
+            <p class="qr-code"><img src="https://api.qrserver.com/v1/create-qr-code/?data=${yummapBaseURL}invitation/${invitation.id}&size=200x200" alt="QR Code" /></p>
+          </body>
+        </html>
         """;
 
         final output = await getTemporaryDirectory();
@@ -125,6 +139,9 @@ class InvitationDetailsScreen extends StatelessWidget {
             bytes: bytes, filename: 'invitation_details.pdf');
       }
     }
+
+    DateTime expirationDate = DateTime.fromMillisecondsSinceEpoch(
+        invitation.dateExpiration ?? DateTime.now().millisecondsSinceEpoch);
 
     return Scaffold(
       appBar: AppBar(
@@ -191,7 +208,8 @@ class InvitationDetailsScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.location_on, color: AppColors.accent),
+                            const Icon(Icons.location_on,
+                                color: AppColors.accent),
                             const SizedBox(width: 8),
                             Text(
                               invitation.restaurant.address,
@@ -199,17 +217,23 @@ class InvitationDetailsScreen extends StatelessWidget {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Code d\'invitation : ${invitation.code}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
                         const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.star, color: AppColors.accent),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${invitation.restaurant.rating} (${invitation.restaurant.numReviews} avis)',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
+                        Text(
+                          'Expire le : ${formatExpirationDate(expirationDate)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
                         ),
                       ],
                     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yumpro/utils/appcolors.dart';
 import 'package:yumpro/utils/custom_widgets.dart';
 import 'package:yumpro/services/api_service.dart';
+import 'package:yumpro/services/mixpanel_service.dart';
 
 class InvitationPage extends StatefulWidget {
   final String invitationId;
@@ -38,6 +39,12 @@ class _InvitationPageState extends State<InvitationPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Code d\'invitation valide!')),
       );
+
+      // Send event to Mixpanel
+      AnalyticsManager().trackEvent('Invitation Code Validated', {
+        'invitationId': widget.invitationId,
+        'code': code,
+      });
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
