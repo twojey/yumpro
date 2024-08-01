@@ -19,8 +19,26 @@ class _InvitationPageState extends State<InvitationPage> {
   Map<String, dynamic>? _invitationData;
 
   final ApiService _apiService = ApiService();
+  bool _isMixpanelInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeMixpanel();
+  }
+
+  Future<void> _initializeMixpanel() async {
+    await AnalyticsManager().init(
+        "1f791bb9a5e27c54a6f0443e425a143d"); // Remplacez par votre jeton Mixpanel
+    setState(() {
+      _isMixpanelInitialized = true;
+    });
+  }
 
   void _validateCode() async {
+    if (!_isMixpanelInitialized)
+      return; // Assurez-vous que Mixpanel est initialisé
+
     final code = _codeController.text;
     if (code.isEmpty) {
       setState(() {
@@ -32,6 +50,9 @@ class _InvitationPageState extends State<InvitationPage> {
     try {
       final invitationData = await _apiService.consumeInvitation(
           int.parse(widget.invitationId), int.parse(code));
+      final restaurantName = invitationData['_restaurant']['name'];
+      final hotelName = invitationData['_workspace']['name'];
+
       setState(() {
         _errorMessage = null;
         _invitationData = invitationData;
@@ -40,10 +61,12 @@ class _InvitationPageState extends State<InvitationPage> {
         const SnackBar(content: Text('Code d\'invitation valide!')),
       );
 
-      // Send event to Mixpanel
+      // Send event to Mixpanel with restaurantName and hotelName
       AnalyticsManager().trackEvent('Invitation Code Validated', {
         'invitationId': widget.invitationId,
         'code': code,
+        'restaurantName': restaurantName,
+        'hotelName': hotelName,
       });
     } catch (e) {
       setState(() {
@@ -76,6 +99,7 @@ class _InvitationPageState extends State<InvitationPage> {
   Widget _buildInvitationDetails(Map<String, dynamic> data) {
     final workspace = data['_workspace'];
     final team = List<Map<String, dynamic>>.from(workspace['team']);
+    final hotelName = workspace['name'];
 
     return Center(
       child: ConstrainedBox(
@@ -92,9 +116,18 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Code Validé, merci pour votre venue',
+                'Code Validé !',
                 style: TextStyle(
                   fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green, // Couleur verte pour le texte
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const Text(
+                'Merci pour votre venue',
+                style: TextStyle(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.green, // Couleur verte pour le texte
                 ),
@@ -112,7 +145,7 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
               const SizedBox(height: 10),
               Text(
-                '${workspace['name']}',
+                '$hotelName',
                 style: TextStyle(
                   fontWeight: FontWeight.bold, // Titre en gras
                   fontSize: 24,
@@ -149,38 +182,40 @@ class _InvitationPageState extends State<InvitationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            if (_invitationData == null) ...[
-              const Text('Entrez le code de votre invitation'),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  constraints: const BoxConstraints(
-                    maxWidth: 250, // Limiter la largeur à 250 pixels
-                  ),
-                  child: TextField(
-                    controller: _codeController,
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      labelText: 'Code de l\'invitation',
-                      errorText: _errorMessage,
+        child: _isMixpanelInitialized
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  if (_invitationData == null) ...[
+                    const Text('Entrez le code de votre invitation'),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          maxWidth: 250, // Limiter la largeur à 250 pixels
+                        ),
+                        child: TextField(
+                          controller: _codeController,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: 'Code de l\'invitation',
+                            errorText: _errorMessage,
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
                     ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 250,
-                child: CustomWidgets.primaryButton(
-                    text: "Valider", onPressed: _validateCode),
-              ),
-            ] else ...[
-              _buildInvitationDetails(_invitationData!),
-            ],
-          ],
-        ),
+                    SizedBox(
+                      width: 250,
+                      child: CustomWidgets.primaryButton(
+                          text: "Valider", onPressed: _validateCode),
+                    ),
+                  ] else ...[
+                    _buildInvitationDetails(_invitationData!),
+                  ],
+                ],
+              )
+            : CircularProgressIndicator(),
       ),
     );
   }
