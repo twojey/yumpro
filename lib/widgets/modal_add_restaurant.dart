@@ -20,14 +20,15 @@ class _AddRestaurantModalState extends State<AddRestaurantModal> {
 
     if (name.isNotEmpty && address.isNotEmpty) {
       final newRestaurant = Restaurant(
-        id: 1,
-        name: name,
-        address: address,
-        imageUrl: 'https://example.com/default_image.jpg',
-        place_id: "",
-        // rating: 0.0,
-        // numReviews: 0,
-      );
+          id: 1,
+          name: name,
+          address: address,
+          imageUrl: 'https://example.com/default_image.jpg',
+          place_id: "",
+          videoLinks: []
+          // rating: 0.0,
+          // numReviews: 0,
+          );
       widget.onAdd(newRestaurant);
       Navigator.pop(context);
     }

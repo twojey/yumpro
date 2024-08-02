@@ -404,6 +404,7 @@ class ApiService {
         address: response['address_str'],
         imageUrl: response['picture_profile'],
         place_id: response['placeId'],
+        videoLinks: response['videoLinks'],
       );
 
       // Retourner l'instance de Restaurant

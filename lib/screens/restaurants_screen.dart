@@ -79,10 +79,12 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
       int workspaceId = prefs.getInt('workspace_id') ?? 0;
       List<Restaurant> fetchedRestaurants =
           await _apiService.getRestaurants(workspaceId);
-      setState(() {
-        restaurants.clear();
-        restaurants.addAll(fetchedRestaurants);
-      });
+      if (mounted) {
+        setState(() {
+          restaurants.clear();
+          restaurants.addAll(fetchedRestaurants);
+        });
+      }
     } catch (e) {
       Fluttertoast.showToast(
         msg: "Erreur lors du chargement des restaurants: $e",
@@ -94,9 +96,11 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
         fontSize: 16.0,
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -178,10 +182,12 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
                               cuisine_id: selectedCuisine,
                             );
 
-                            setState(() {
-                              isDialogLoading = false;
-                              restaurants.add(newRestaurant);
-                            });
+                            if (mounted) {
+                              setState(() {
+                                isDialogLoading = false;
+                                restaurants.add(newRestaurant);
+                              });
+                            }
 
                             Fluttertoast.showToast(
                               msg: "Restaurant ajouté avec succès.",
@@ -204,67 +210,17 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
                               fontSize: 16.0,
                             );
 
-                            setState(() {
-                              isDialogLoading = false;
-                            });
+                            if (mounted) {
+                              setState(() {
+                                isDialogLoading = false;
+                              });
+                            }
                           }
                         }
                       },
                     )
                   ],
                 ),
-                // ElevatedButton(
-                //   onPressed: () async {
-                //     final String name = nameController.text.trim();
-                //     final String address = addressController.text.trim();
-                //     if (name.isNotEmpty && address.isNotEmpty) {
-                //       setState(() {
-                //         isDialogLoading = true;
-                //       });
-
-                //       try {
-                //         final newRestaurant =
-                //             await _apiService.addRestaurantToWorkspace(
-                //           workspaceId: workspaceId,
-                //           restaurantName: name,
-                //           address: address,
-                //           cuisine_id: selectedCuisine,
-                //         );
-
-                //         setState(() {
-                //           isDialogLoading = false;
-                //           restaurants.add(newRestaurant);
-                //         });
-
-                //         Fluttertoast.showToast(
-                //           msg: "Restaurant ajouté avec succès.",
-                //           toastLength: Toast.LENGTH_SHORT,
-                //           gravity: ToastGravity.CENTER,
-                //           timeInSecForIosWeb: 2,
-                //           textColor: Colors.white,
-                //           fontSize: 16.0,
-                //         );
-
-                //         Navigator.of(context).pop();
-                //       } catch (e) {
-                //         Fluttertoast.showToast(
-                //           msg: "Erreur lors de l'ajout du restaurant: $e",
-                //           toastLength: Toast.LENGTH_SHORT,
-                //           gravity: ToastGravity.BOTTOM,
-                //           timeInSecForIosWeb: 3,
-                //           backgroundColor: Colors.red,
-                //           textColor: Colors.white,
-                //           fontSize: 16.0,
-                //         );
-
-                //         setState(() {
-                //           isDialogLoading = false;
-                //         });
-                //       }
-                //     }
-                //   },
-                //   child: const Text('Ajouter à la liste'),
-                // ),
               ],
             );
           },

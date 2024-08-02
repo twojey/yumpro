@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:printing/printing.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:video_player/video_player.dart';
 import 'package:yumpro/models/invitation.dart';
 import 'package:yumpro/utils/appcolors.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -100,6 +101,11 @@ class InvitationDetailsScreen extends StatelessWidget {
                 padding: 20px;
                 font-family: Arial, sans-serif;
               }
+              .container {
+                max-width: 800px;
+                width: 100%;
+                text-align: left;
+              }
               .spacer {
                 margin: 20px 0;
               }
@@ -115,16 +121,25 @@ class InvitationDetailsScreen extends StatelessWidget {
               h1 {
                 text-align: center;
               }
+              .bold {
+                font-weight: bold;
+              }
             </style>
           </head>
           <body>
-            <h1>Détails de l'invitation</h1>
-            <p class="spacer">Vous êtes invité à manger chez ${invitation.restaurant.name}</p>
-            <img src="${invitation.restaurant.imageUrl}" alt="Restaurant" class="spacer" />
-            <p class="spacer">Adresse: ${invitation.restaurant.address}</p>
-            <p class="spacer">CODE : ${invitation.code}</p>
-            <p class="spacer">Expire le : ${formatExpirationDate(expirationDate)}</p>
-            <p class="qr-code"><img src="https://api.qrserver.com/v1/create-qr-code/?data=${yummapBaseURL}invitation/${invitation.id}&size=200x200" alt="QR Code" /></p>
+            <div class="container">
+              <h1>Détails de l'invitation</h1>
+              <p class="spacer">Vous êtes invité à manger chez ${invitation.restaurant.name}</p>
+              <img src="${invitation.restaurant.imageUrl}" alt="Restaurant" class="spacer" />
+              <p class="spacer">Adresse: ${invitation.restaurant.address}</p>
+              <p class="spacer">CODE : ${invitation.code}</p>
+              <p class="spacer">Expire le : ${formatExpirationDate(expirationDate)}</p>
+              <p class="bold">Présentation :</p>
+              <p class="spacer">${invitation.restaurantDetails.presentation}</p>
+              <p class="bold">Instructions :</p>
+              <p class="spacer">${invitation.restaurantDetails.instructions}</p>
+              <p class="qr-code"><img src="https://api.qrserver.com/v1/create-qr-code/?data=${yummapBaseURL}invitation/${invitation.id}&size=200x200" alt="QR Code" /></p>
+            </div>
           </body>
         </html>
         """;
@@ -163,72 +178,186 @@ class InvitationDetailsScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          height: 200,
-                          width: 200,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border:
-                                Border.all(color: AppColors.accent, width: 4),
-                            image: DecorationImage(
-                              fit: BoxFit.cover,
-                              image:
-                                  NetworkImage(invitation.restaurant.imageUrl),
+            child: Container(
+              constraints: BoxConstraints(maxWidth: 800),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            height: 200,
+                            width: 200,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: AppColors.accent, width: 4),
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: NetworkImage(
+                                    invitation.restaurant.imageUrl),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Vous êtes invité à manger chez',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey,
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Vous êtes invité à manger chez',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey,
+                            ),
                           ),
-                        ),
+                          Text(
+                            invitation.restaurant.name,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.location_on,
+                                  color: AppColors.accent),
+                              const SizedBox(width: 8),
+                              Text(
+                                invitation.restaurant.address,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Code d\'invitation : ${invitation.code}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Expire le : ${formatExpirationDate(expirationDate)}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 50),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          QrImageView(
+                            data: '${yummapBaseURL}invitation/${invitation.id}',
+                            version: QrVersions.auto,
+                            size: 200.0,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (invitation.restaurant.videoLinks.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children:
+                            invitation.restaurant.videoLinks.map((videoUrl) {
+                          // Crée l'URL de la miniature en remplaçant .mp4 par .jpg
+                          final thumbnailUrl =
+                              videoUrl.replaceAll('.mp4', '.jpg');
+
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: GestureDetector(
+                              onTap: () => _showVideoDialog(context, videoUrl),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    // Affiche la miniature de la vidéo
+                                    Image.network(
+                                      thumbnailUrl,
+                                      width: 150,
+                                      height: 250,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Container(
+                                          width: 150,
+                                          height: 250,
+                                          color: Colors.black,
+                                          child: Icon(
+                                            Icons.error,
+                                            color:
+                                                Colors.white.withOpacity(0.7),
+                                            size: 50,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const Icon(
+                                      Icons.play_circle_outline,
+                                      color: Colors.white,
+                                      size: 50,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  // Présentation et instructions
+                  Container(
+                    constraints: BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          invitation.restaurant.name,
+                          'Présentation :',
                           style: const TextStyle(
-                            fontSize: 24,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.location_on,
-                                color: AppColors.accent),
-                            const SizedBox(width: 8),
-                            Text(
-                              invitation.restaurant.address,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
                         Text(
-                          'Code d\'invitation : ${invitation.code}',
+                          invitation.restaurantDetails.presentation,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         Text(
-                          'Expire le : ${formatExpirationDate(expirationDate)}',
+                          'A noter :',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Text(
+                          invitation.restaurantDetails.instructions,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -237,24 +366,67 @@ class InvitationDetailsScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(width: 50),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        QrImageView(
-                          data: '${yummapBaseURL}invitation/${invitation.id}',
-                          version: QrVersions.auto,
-                          size: 200.0,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                  SizedBox(
+                    height: 50,
+                  )
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  void _showVideoDialog(BuildContext context, String videoUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(10),
+          child: VideoPlayerWidget(videoUrl: videoUrl),
+        );
+      },
+    );
+  }
+}
+
+class VideoPlayerWidget extends StatefulWidget {
+  final String videoUrl;
+
+  const VideoPlayerWidget({Key? key, required this.videoUrl}) : super(key: key);
+
+  @override
+  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.network(widget.videoUrl)
+      ..initialize().then((_) {
+        setState(() {});
+        _controller.play();
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _controller.value.isInitialized
+        ? AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          )
+        : const Center(child: CircularProgressIndicator());
   }
 }

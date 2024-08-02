@@ -10,6 +10,7 @@ class Invitation {
   final Restaurant restaurant;
   final int code;
   final int? dateExpiration; // Utilisation de nullable int
+  final RestaurantDetails restaurantDetails;
 
   Invitation({
     required this.id,
@@ -21,6 +22,7 @@ class Invitation {
     required this.code,
     required this.restaurant,
     this.dateExpiration,
+    required this.restaurantDetails,
   });
 
   factory Invitation.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,29 @@ class Invitation {
       consumed: json['consumed'],
       dateExpiration: json['date_expiration'],
       restaurant: Restaurant.fromJson(json['restaurant']),
+      restaurantDetails:
+          RestaurantDetails.fromJson(json['_resto_yumpro_of_restaurants']),
+    );
+  }
+}
+
+// Le modèle pour les informations supplémentaires sur le restaurant et l'espace de travail
+class RestaurantDetails {
+  final String presentation;
+  final String instagram;
+  final String instructions;
+
+  RestaurantDetails({
+    required this.presentation,
+    required this.instagram,
+    required this.instructions,
+  });
+
+  factory RestaurantDetails.fromJson(Map<String, dynamic> json) {
+    return RestaurantDetails(
+      presentation: json['presentation'],
+      instagram: json['instagram'],
+      instructions: json['instructions'],
     );
   }
 }
