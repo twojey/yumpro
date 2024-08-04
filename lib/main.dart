@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:yumpro/models/invitation.dart';
+import 'package:yumpro/screens/forgot_password_screen.dart';
 import 'package:yumpro/screens/home_screen.dart';
 import 'package:yumpro/screens/invitation_page.dart';
 import 'package:yumpro/screens/invitations_details.dart';
@@ -8,11 +10,15 @@ import 'package:yumpro/screens/landing_screen.dart';
 import 'package:yumpro/screens/login_screen.dart';
 import 'package:yumpro/screens/onboarding_screen.dart';
 import 'package:yumpro/screens/register_screen.dart';
+import 'package:yumpro/screens/reset_password_screen.dart';
 import 'package:yumpro/services/auth_service.dart';
 import 'package:yumpro/utils/appcolors.dart';
 
-void main() {
+void main() async {
   setUrlStrategy(PathUrlStrategy()); // Configure URL strategy without #
+  print("aaa");
+  await dotenv.load(fileName: ".env");
+  print("bbb");
   runApp(const MyApp());
 }
 
@@ -40,7 +46,7 @@ class MyApp extends StatelessWidget {
         }
 
         // Handle other routes
-        switch (settings.name) {
+        switch (uri.path) {
           case '/':
             return MaterialPageRoute(
               builder: (context) => FutureBuilder<Map<String, dynamic>>(
@@ -95,6 +101,15 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) =>
                   InvitationDetailsScreen(invitation: invitation!),
+            );
+          case '/forgot_password':
+            return MaterialPageRoute(
+              builder: (context) => ForgotPasswordScreen(),
+            );
+          case '/reset_password':
+            final email = uri.queryParameters['email'] ?? '';
+            return MaterialPageRoute(
+              builder: (context) => ResetPasswordScreen(email: email),
             );
           default:
             return MaterialPageRoute(

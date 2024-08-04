@@ -102,18 +102,29 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 50.0),
               Center(
                 child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: CustomWidgets.primaryButton(
-                        text: "Login", onPressed: _login)),
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: CustomWidgets.primaryButton(
+                    text: "Login",
+                    onPressed: _login,
+                  ),
+                ),
               ),
               const SizedBox(height: 20.0),
               CustomWidgets.textButton(
-                  onPressed: () {
-                    // Naviguer vers la route de l'écran d'enregistrement
-                    Navigator.pushReplacementNamed(context, '/register');
-                  },
-                  text: "Si vous n'avez pas encore de compte, cliquez ici"),
+                onPressed: () {
+                  // Naviguer vers la route de l'écran d'enregistrement
+                  Navigator.pushReplacementNamed(context, '/register');
+                },
+                text: "Si vous n'avez pas encore de compte, cliquez ici",
+              ),
               const SizedBox(height: 20.0),
+              CustomWidgets.textButton(
+                onPressed: () {
+                  // Naviguer vers la route de l'écran de réinitialisation du mot de passe
+                  Navigator.pushReplacementNamed(context, '/forgot_password');
+                },
+                text: "Mot de passe oublié ?",
+              ),
             ],
           ),
         ),
