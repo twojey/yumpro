@@ -11,6 +11,7 @@ class Invitation {
   final int code;
   final int? dateExpiration; // Utilisation de nullable int
   final RestaurantDetails restaurantDetails;
+  final int? dateUsage;
 
   Invitation({
     required this.id,
@@ -23,6 +24,7 @@ class Invitation {
     required this.restaurant,
     this.dateExpiration,
     required this.restaurantDetails,
+    this.dateUsage,
   });
 
   factory Invitation.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class Invitation {
       restaurant: Restaurant.fromJson(json['restaurant']),
       restaurantDetails:
           RestaurantDetails.fromJson(json['_resto_yumpro_of_restaurants']),
+      dateUsage: json['date_usage'],
     );
   }
 }

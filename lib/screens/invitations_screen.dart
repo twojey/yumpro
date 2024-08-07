@@ -80,6 +80,8 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    DateTime now = new DateTime.now();
+    DateTime date = new DateTime(now.year, now.month, now.day);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Invitations'),
@@ -120,7 +122,17 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
                               ),
                             ),
                           ),
-                          if (invitation.dateExpiration != null)
+                          if(invitation.consumed)
+                          Text(
+                              'Invitation consomée le ${_formatDate(invitation.dateUsage)}',
+                              style: const TextStyle(color: AppColors.textHint),
+                            ),
+                          if(!invitation.consumed && date.isAfter(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)) )
+                          Text(
+                            'Invitation expirée le ${_formatDate(invitation.dateExpiration)}',
+                            style: const TextStyle(color: AppColors.textHint),
+                          ),
+                          if(!invitation.consumed && date.isBefore(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)))
                             Text(
                               'Expire le ${_formatDate(invitation.dateExpiration)}',
                               style: const TextStyle(color: AppColors.textHint),

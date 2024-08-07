@@ -49,12 +49,15 @@ class InvitationDetailsScreen extends StatelessWidget {
     Future<void> generateAndDownloadPDF() async {
       DateTime expirationDate = DateTime.fromMillisecondsSinceEpoch(
           invitation.dateExpiration ?? DateTime.now().millisecondsSinceEpoch);
-
+      DateTime dateUsage = DateTime.fromMillisecondsSinceEpoch(
+          invitation.dateUsage ?? DateTime.now().millisecondsSinceEpoch);
       if (kIsWeb) {
         final doc = pw.Document();
         final qrCodeData =
             await generateQrCode('${yummapBaseURL}invitation/${invitation.id}');
         final qrCodeImage = pw.MemoryImage(qrCodeData);
+        DateTime now = new DateTime.now();
+        DateTime date = new DateTime(now.year, now.month, now.day);
 
         doc.addPage(
           pw.Page(
@@ -76,8 +79,21 @@ class InvitationDetailsScreen extends StatelessWidget {
                   pw.Text('Code : ${invitation.code}',
                       textAlign: pw.TextAlign.center),
                   pw.SizedBox(height: 10),
-                  pw.Text('Expire le : ${formatExpirationDate(expirationDate)}',
-                      textAlign: pw.TextAlign.center),
+
+                  if (invitation.consumed)
+                    pw.Text('Invitation consommée le ${formatExpirationDate(dateUsage)}',
+                                textAlign: pw.TextAlign.center),
+
+                  if (!invitation.consumed && date.isAfter(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)))
+                    pw.Text('Invitation expirée le ${formatExpirationDate(expirationDate)}',
+                                textAlign: pw.TextAlign.center),
+                
+                  if (!invitation.consumed && date.isBefore(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)))
+                     pw.Text('Expire le : ${formatExpirationDate(expirationDate)}',
+                                textAlign: pw.TextAlign.center),
+
+                  // pw.Text('Expire laaa : ${formatExpirationDate(expirationDate)}',
+                  //     textAlign: pw.TextAlign.center),
                   pw.SizedBox(height: 20),
                   pw.Image(qrCodeImage, width: 200, height: 200),
                 ],
@@ -157,16 +173,20 @@ class InvitationDetailsScreen extends StatelessWidget {
 
     DateTime expirationDate = DateTime.fromMillisecondsSinceEpoch(
         invitation.dateExpiration ?? DateTime.now().millisecondsSinceEpoch);
+    DateTime usageDate = DateTime.fromMillisecondsSinceEpoch(
+        invitation.dateUsage ?? DateTime.now().millisecondsSinceEpoch);
+    DateTime now = new DateTime.now();
+    DateTime date = new DateTime(now.year, now.month, now.day);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Détails de l\'invitation'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.outgoing_mail),
-            onPressed: generateAndDownloadPDF,
-            iconSize: 45,
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.outgoing_mail),
+          //   onPressed: generateAndDownloadPDF,
+          //   iconSize: 45,
+          // ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: CustomWidgets.primaryButton(
@@ -244,14 +264,29 @@ class InvitationDetailsScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
+                          // Text(
+                          //   'Expire le : ${formatExpirationDate(expirationDate)}',
+                          //   style: const TextStyle(
+                          //     fontSize: 16,
+                          //     fontWeight: FontWeight.w500,
+                          //     color: Colors.black,
+                          //   ),
+                          // ),
+                          if(invitation.consumed)
                           Text(
-                            'Expire le : ${formatExpirationDate(expirationDate)}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
+                              'Invitation consomée le ${formatExpirationDate(usageDate)}',
+                              style: const TextStyle(color: AppColors.textHint),
                             ),
+                          if(!invitation.consumed && date.isAfter(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)) )
+                          Text(
+                            'Invitation expirée le ${formatExpirationDate(expirationDate)}',
+                            style: const TextStyle(color: AppColors.textHint),
                           ),
+                          if(!invitation.consumed && date.isBefore(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)))
+                            Text(
+                              'Expire le ${formatExpirationDate(expirationDate)}',
+                              style: const TextStyle(color: AppColors.textHint),
+                            ),
                         ],
                       ),
                       const SizedBox(width: 50),
