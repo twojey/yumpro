@@ -16,7 +16,7 @@ class Restaurant {
     this.rating = 5,
     this.numReviews = 0,
     required this.place_id,
-    required this.videoLinks,
+    this.videoLinks = const [], // Valeur par défaut pour videoLinks
   });
 
   // Méthode factory pour créer une instance de Restaurant à partir d'un objet JSON
@@ -28,14 +28,14 @@ class Restaurant {
       address: json['address_str'],
       imageUrl: json['picture_profile'] ?? 'https://via.placeholder.com/150',
       rating: json['ratings'] != null
-          ? double.parse(json['ratings'].toString())
+          ? double.tryParse(json['ratings'].toString()) ?? 5
           : 5,
       numReviews: json['number_of_reviews'] != null
-          ? int.parse(json['number_of_reviews'].toString())
+          ? int.tryParse(json['number_of_reviews'].toString()) ?? 0
           : 0,
-      videoLinks: json['video_links'] != null
+      videoLinks: (json['video_links'] != null && json['video_links'] is List)
           ? List<String>.from(json['video_links'])
-          : [],
+          : [], // Liste vide si null
     );
   }
 }

@@ -20,7 +20,9 @@ class ForgotPasswordScreen extends StatelessWidget {
     final bool emailExists = await _checkIfEmailExists(email);
     if (!emailExists) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cet email n\'existe pas dans notre base de données')),
+        const SnackBar(
+            content:
+                Text('Cet email n\'existe pas dans notre base de données')),
       );
       return;
     }
@@ -46,10 +48,11 @@ class ForgotPasswordScreen extends StatelessWidget {
   }
 
   Future<bool> _checkIfEmailExists(String email) async {
-    final url = Uri.parse('https://x8ki-letl-twmt.n7.xano.io/api:LYxWamUX/user/email/$email');
+    final url = Uri.parse(
+        'https://x8ki-letl-twmt.n7.xano.io/api:LYxWamUX/user/email/$email');
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      //final data = json.decode(response.body);
       return true; // Assuming the response contains a field 'exists' indicating the existence of the email
     } else {
       return false;
@@ -69,10 +72,13 @@ class ForgotPasswordScreen extends StatelessWidget {
     };
     final body = json.encode({
       'sender': {'name': 'Yummap', 'email': 'yummap.app@gmail.com'},
-      'to': [{'email': email}],
+      'to': [
+        {'email': email}
+      ],
       'subject': 'Réinitialisation de mot de passe',
       //IL FAUT METTRE L4URL DANS LE MAIL EN DYNAMIQUE
-      'htmlContent': '<html><body><h1>Réinitialisation de mot de passe</h1><p>Pour réinitialiser votre mot de passe, cliquez sur le lien ci-dessous:</p><a href="https://yummap-pro.web.app/reset_password?email=$email">Réinitialiser le mot de passe</a></body></html>',
+      'htmlContent':
+          '<html><body><h1>Réinitialisation de mot de passe</h1><p>Pour réinitialiser votre mot de passe, cliquez sur le lien ci-dessous:</p><a href="https://yummap-pro.web.app/reset_password?email=$email">Réinitialiser le mot de passe</a></body></html>',
     });
     return http.post(url, headers: headers, body: body);
   }

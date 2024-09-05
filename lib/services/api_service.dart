@@ -376,27 +376,53 @@ class ApiService {
     try {
       Map<String, dynamic> placeInfo =
           await getPlacesInfos(restaurantName, address);
+      print('*********************');
+      print('*********************');
+
+      print(placeInfo);
       String photoReference = placeInfo['photos'][0]['photo_reference'];
       String photoUrl = getPhotoUrl(photoReference);
       String s3Key = '${placeInfo['place_id']}/profile.jpg';
       await uploadUrlContentToS3(s3Key, photoUrl);
       String s3PhotoUrl =
           'https://yummaptest2.s3.eu-north-1.amazonaws.com/$s3Key';
-      print(s3PhotoUrl);
       Map<String, dynamic> restaurantData = {
         "cuisine_id": cuisine_id,
         "address": placeInfo['address'],
         "restaurant_name": placeInfo['name'],
         "picture_profile": s3PhotoUrl,
         "place_id": placeInfo['place_id'],
-        "GPS_address": placeInfo['geometry']['location'],
+        "GPS_address": {
+          "lat": placeInfo['geometry']['location']['lat'],
+          "lng": placeInfo['geometry']['location']['lng']
+        },
         "workspace_id": workspaceId,
+        "phone_number": placeInfo['formatted_phone_number'] ?? '',
+        "ratings": placeInfo['rating'] ?? 0.0,
+        "handicap": placeInfo['handicap'] ?? '',
+        "vege": placeInfo['vege'] ?? '',
+        "number_of_reviews": placeInfo['user_ratings_total'] ?? 0,
+        "website_url": placeInfo['website'] ?? '',
+        "schedule": placeInfo['weekday_text'] ?? [],
+        "reviews": placeInfo['reviews']
+                ?.map((review) => {
+                      'author': review['author_name'],
+                      'text': review['text'],
+                      'rating': review['rating'],
+                      'date_published': review['time'],
+                      'author_profile_url': review['author_url'],
+                      'lang': review['language'],
+                    })
+                .toList() ??
+            [],
       };
+      print('*********************');
+      print(restaurantData);
 
       // Effectuer la requête POST pour ajouter le restaurant
       Map<String, dynamic> response =
           await _postRequest('/workspace/restaurant', restaurantData);
-
+      print("SIX");
       // Créer une instance de Restaurant à partir de la réponse
       Restaurant restaurant = Restaurant(
         id: response['id'], // Assurez-vous que l'API retourne un identifiant
