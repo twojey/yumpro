@@ -379,7 +379,6 @@ class ApiService {
       print('*********************');
       print('*********************');
 
-      print(placeInfo);
       String photoReference = placeInfo['photos'][0]['photo_reference'];
       String photoUrl = getPhotoUrl(photoReference);
       String s3Key = '${placeInfo['place_id']}/profile.jpg';
@@ -417,12 +416,12 @@ class ApiService {
             [],
       };
       print('*********************');
-      print(restaurantData);
 
       // Effectuer la requête POST pour ajouter le restaurant
       Map<String, dynamic> response =
           await _postRequest('/workspace/restaurant', restaurantData);
       print("SIX");
+      print(response);
       // Créer une instance de Restaurant à partir de la réponse
       Restaurant restaurant = Restaurant(
         id: response['id'], // Assurez-vous que l'API retourne un identifiant
@@ -430,7 +429,8 @@ class ApiService {
         address: response['address_str'],
         imageUrl: response['picture_profile'],
         place_id: response['placeId'],
-        videoLinks: response['videoLinks'],
+        videoLinks:
+            (response['video_links'] as List).map((e) => e.toString()).toList(),
       );
 
       // Retourner l'instance de Restaurant
