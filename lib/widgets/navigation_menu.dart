@@ -49,6 +49,10 @@ class NavigationMenu extends StatelessWidget {
           icon: _buildIcon(Icons.settings, selectedIndex == 4),
           label: const Text('Paramètres'),
         ),
+        // NavigationRailDestination(
+        //   icon: _buildIcon(Icons.accessibility_new_sharp, selectedIndex == 5),
+        //   label: const Text('Test Screen'),
+        // ),
       ],
       selectedIndex: selectedIndex,
       onDestinationSelected: onDestinationSelected,

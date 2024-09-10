@@ -64,6 +64,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       // Save user data using the API
       await _apiService.updateUser(_userData['id'], _userData);
 
+      // Envoyer l'événement "inscriptionHotel" avec user_id
+      final event = {
+        'user_id': _userData['user_id'],
+        // Ajoutez d'autres champs à l'événement si nécessaire
+      };
+      await _apiService.sendEvent('inscriptionHotel', event);
+
       // Navigate to the home screen
       Navigator.pushReplacementNamed(context, '/');
     } catch (e) {

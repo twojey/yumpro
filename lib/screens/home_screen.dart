@@ -4,6 +4,7 @@ import 'package:yumpro/screens/qr_code_screen.dart';
 import 'package:yumpro/screens/restaurants_screen.dart';
 import 'package:yumpro/screens/settings_screen.dart';
 import 'package:yumpro/screens/workspace_screen.dart';
+import 'package:yumpro/screens/testscreen_page.dart'; // Import du TestScreen
 import 'package:yumpro/utils/appcolors.dart';
 import 'package:yumpro/widgets/navigation_menu.dart';
 import 'package:yumpro/models/user.dart';
@@ -79,6 +80,9 @@ class _HomeScreenState extends State<HomeScreen> {
       case 4:
         currentScreen = const SettingsScreen();
         break;
+      case 5:
+        currentScreen = const TestScreen(); // Ajouter le TestScreen ici
+        break;
       default:
         currentScreen = const RestaurantScreen();
     }
@@ -89,7 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationMenu(
             selectedIndex: _selectedIndex,
             onDestinationSelected: (index) {
-              if (index < 5) {
+              if (index < 6) {
+                // Inclure TestScreen dans la sélection
                 _selectScreen(index);
               }
             },

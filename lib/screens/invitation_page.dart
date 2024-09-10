@@ -35,7 +35,7 @@ class _InvitationPageState extends State<InvitationPage> {
     });
   }
 
-  void _validateCode() async {
+  Future<void> _validateCode() async {
     if (!_isMixpanelInitialized)
       return; // Assurez-vous que Mixpanel est initialisé
 
@@ -61,12 +61,17 @@ class _InvitationPageState extends State<InvitationPage> {
         const SnackBar(content: Text('Code d\'invitation valide!')),
       );
 
-      // Send event to Mixpanel with restaurantName and hotelName
+      // Envoyer l'événement à Mixpanel avec restaurantName et hotelName
       AnalyticsManager().trackEvent('Invitation Code Validated', {
         'invitationId': widget.invitationId,
         'code': code,
         'restaurantName': restaurantName,
         'hotelName': hotelName,
+      });
+
+      // Envoyer l'événement à AWS
+      await _apiService.sendEvent('dinnerValidated', {
+        'invitation_id': widget.invitationId,
       });
     } catch (e) {
       setState(() {

@@ -315,6 +315,46 @@ class ApiService {
     }
   }
 
+  Future<void> sendEvent(
+      String eventName, Map<String, dynamic> eventData) async {
+    final String apiUrl =
+        'https://7k6mepr5m8.execute-api.eu-west-1.amazonaws.com/v1';
+
+    // Préparation des données à envoyer
+    final Map<String, dynamic> requestBody = {
+      'eventName': eventName,
+      'eventData': eventData,
+    };
+
+    print("requestBody :");
+    print(jsonEncode(requestBody)); // Affiche les données encodées en JSON
+
+    try {
+      // Envoi de la requête POST
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          // Ajoutez d'autres en-têtes si nécessaire
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      // Affichage des logs de la réponse
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      // Vérification de la réponse
+      if (response.statusCode == 200) {
+        print('Événement envoyé avec succès');
+      } else {
+        print('Erreur lors de l\'envoi: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Exception: $e');
+    }
+  }
+
   Future<Map<String, dynamic>> postHotelInfo(
       String name, String address, int teamSize) async {
     try {
