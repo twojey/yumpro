@@ -39,10 +39,13 @@ class _TestScreenState extends State<TestScreen> {
       final apiService = ApiService();
       final event = {
         'invitation_id': 19,
-        // Add any additional event data here if needed
+        'restaurant_id': 92,
+        'workspace_id': 22,
+        'user_id': 1
       };
+
       try {
-        await apiService.sendEvent('dinnerValidated', event);
+        await apiService.sendEvent('invitationCreated', event);
         print('Event sent successfully.');
       } catch (error) {
         print('Failed to send event: $error');

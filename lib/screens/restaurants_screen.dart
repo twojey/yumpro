@@ -198,6 +198,15 @@ class RestaurantScreenState extends State<RestaurantScreen> with RouteAware {
                               fontSize: 16.0,
                             );
 
+                            var event = {
+                              'restaurant_id': newRestaurant.id,
+                              'workspace_id': workspaceId,
+                            };
+
+                            // Envoi de l'event à l'API
+                            await _apiService.sendEvent(
+                                'recommandationRestaurantByHotel', event);
+
                             Navigator.of(context).pop();
                           } catch (e) {
                             Fluttertoast.showToast(
