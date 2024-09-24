@@ -96,6 +96,10 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => const LandingPage(),
             );
+          case '/demo':
+            return MaterialPageRoute(
+              builder: (context) => const LandingPage(),
+            );
           case '/invitation-details':
             final invitation = settings.arguments as Invitation?;
             return MaterialPageRoute(
