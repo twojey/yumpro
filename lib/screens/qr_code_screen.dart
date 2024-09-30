@@ -69,7 +69,9 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
       if (response.statusCode == 200) {
         json.decode(response.body);
         setState(() {
-          _branchUrl = "https://yummap.app.link/$nameNoAccent";
+          // _branchUrl = "https://yummap.app.link/$nameNoAccent";
+          // _branchUrl = "yummap://hotel/123";
+          _branchUrl = "https://x8ki-letl-twmt.n7.xano.io/api:LYxWamUX/redirect";
         });
       } else {
         throw Exception('Failed to create Branch link');
