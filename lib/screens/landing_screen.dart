@@ -12,29 +12,45 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage> {
   late VideoPlayerController _controller;
-  bool _playClicked = false; // Variable pour suivre si Play a été cliqué
-  bool _isVideoEnded = false; // Variable pour suivre si la vidéo est terminée
+  bool _playClicked = false; // Suivre si le bouton Play a été cliqué
+  bool _isVideoEnded = false; // Suivre si la vidéo est terminée
+  bool _isLoading = true; // Indiquer si la vidéo est en cours de chargement
+  bool _hasError = false; // Indiquer si une erreur s'est produite
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(
-      'https://yummap.s3.eu-north-1.amazonaws.com/yumpro/snapvid-yumpro-intro.mp4',
-    )..initialize().then((_) {
-        setState(
-            () {}); // Met à jour l'interface utilisateur lorsque la vidéo est prête à être lue
-      });
-
-    _controller.addListener(() {
-      if (_controller.value.position == _controller.value.duration) {
-        setState(() {
-          _isVideoEnded = true;
-        });
-      }
-    });
-
+    _initializeVideoPlayer();
     // Suivi de l'événement lorsque l'utilisateur arrive sur la page
     AnalyticsManager().trackEvent('landing_page_view');
+  }
+
+  Future<void> _initializeVideoPlayer() async {
+    try {
+      _controller = VideoPlayerController.network(
+        'https://yummap.s3.eu-north-1.amazonaws.com/yumpro/snapvid-yumpro-intro.mp4',
+      );
+
+      await _controller.initialize();
+      setState(() {
+        _isLoading = false;
+        _hasError = false;
+      });
+
+      _controller.addListener(() {
+        if (_controller.value.position == _controller.value.duration) {
+          setState(() {
+            _isVideoEnded = true;
+          });
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
+      print('Erreur lors du chargement de la vidéo: $e');
+    }
   }
 
   @override
@@ -52,29 +68,30 @@ class _LandingPageState extends State<LandingPage> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              const SizedBox(
-                height: 30,
-              ),
+              const SizedBox(height: 30),
               const Text(
                 'Invitation au restaurant 🍽️',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               Stack(
                 alignment: Alignment.bottomLeft,
                 children: [
-                  _controller.value.isInitialized
-                      ? AspectRatio(
-                          aspectRatio: _controller.value.aspectRatio,
-                          child: VideoPlayer(_controller),
-                        )
-                      : const CircularProgressIndicator(
+                  _isLoading
+                      ? const CircularProgressIndicator(
                           valueColor:
                               AlwaysStoppedAnimation<Color>(AppColors.accent),
-                        ),
-                  if (_controller.value.isInitialized)
+                        )
+                      : _hasError
+                          ? const Text(
+                              'Erreur lors du chargement de la vidéo.',
+                              style: TextStyle(color: Colors.red),
+                            )
+                          : AspectRatio(
+                              aspectRatio: _controller.value.aspectRatio,
+                              child: VideoPlayer(_controller),
+                            ),
+                  if (!_isLoading && !_hasError)
                     Positioned(
                       left: 16,
                       bottom: 16,
@@ -84,7 +101,7 @@ class _LandingPageState extends State<LandingPage> {
                         onPressed: () {
                           setState(() {
                             if (!_playClicked) {
-                              // Suivi de l'événement lorsque l'utilisateur clique sur Play pour la première fois
+                              // Suivi de l'événement lorsque l'utilisateur clique sur Play
                               AnalyticsManager().trackEvent('play_clicked');
                               _playClicked = true;
                             }
@@ -110,20 +127,19 @@ class _LandingPageState extends State<LandingPage> {
                     ),
                 ],
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange.shade800, // couleur du bouton
                   foregroundColor: Colors.white, // couleur du texte
                   padding: const EdgeInsets.symmetric(
-                      vertical: 16, horizontal: 20), // padding vertical
+                    vertical: 16,
+                    horizontal: 20,
+                  ), // padding vertical
                 ),
                 onPressed: () {
                   // Suivi de l'événement lorsque l'utilisateur clique sur "Accéder au service"
                   AnalyticsManager().trackEvent('access_service_clicked');
-                  // Action à effectuer lors de l'appui sur le bouton
                   Navigator.pushNamed(context, '/register');
                 },
                 child: const Row(
@@ -136,9 +152,7 @@ class _LandingPageState extends State<LandingPage> {
                         fontWeight: FontWeight.bold, // poids de la police
                       ),
                     ),
-                    SizedBox(
-                      width: 8,
-                    ),
+                    SizedBox(width: 8),
                     Icon(Icons.arrow_forward),
                   ],
                 ),

@@ -15,6 +15,7 @@ class Step3Hotel extends StatefulWidget {
 class _Step3HotelState extends State<Step3Hotel> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
+  bool _isSubmitting = false; // Variable pour gérer l'état du bouton
 
   @override
   void dispose() {
@@ -24,31 +25,44 @@ class _Step3HotelState extends State<Step3Hotel> {
   }
 
   Future<void> _submitForm() async {
-    // Retrieve existing user data
-    final userData = await AuthService().getUserInfo();
+    // Désactiver le bouton avant de lancer la requête
+    setState(() {
+      _isSubmitting = true;
+    });
+    _isSubmitting = true;
 
-    // Update user data with profile data
-    userData['name'] = _lastNameController.text;
-    userData['first_name'] = _firstNameController.text;
-    userData['anonymous_com'] = false;
-    userData['user_id'] = userData['user_id'] as int;
-    userData['id'] = userData['user_id'] as int;
-    String wId = userData['workspace_place_id'];
-    userData['photo_url'] =
-        "https://yummaptest2.s3.eu-north-1.amazonaws.com/$wId/profile.jpg";
+    try {
+      // Récupérer les informations de l'utilisateur existant
+      final userData = await AuthService().getUserInfo();
 
-    print("--- STEP 3 -----");
+      // Mettre à jour les informations de l'utilisateur
+      userData['name'] = _lastNameController.text;
+      userData['first_name'] = _firstNameController.text;
+      userData['anonymous_com'] = false;
+      userData['user_id'] = userData['user_id'] as int;
+      userData['id'] = userData['user_id'] as int;
+      String wId = userData['workspace_place_id'];
+      userData['photo_url'] =
+          "https://yummaptest2.s3.eu-north-1.amazonaws.com/$wId/profile.jpg";
 
-    print(userData); // For debugging purposes
+      // Sauvegarder les données mises à jour
+      await AuthService().saveUserInfo(userData);
 
-    // Save updated user data
-    await AuthService().saveUserInfo(userData);
+      // Appelle la fonction onCompletion avec les données mises à jour
+      widget.onCompletion(userData);
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de la soumission : $error')),
+      );
+    } finally {
+      // Attendre 2 secondes avant de réactiver le bouton
+      await Future.delayed(const Duration(seconds: 3));
 
-    // Call onCompletion with updated user data
-    widget.onCompletion(userData);
-
-    // Navigate to home screen
-    // Navigator.pushReplacementNamed(context, '/');
+      // Réactiver le bouton lorsque la requête est terminée ou si une erreur survient
+      setState(() {
+        _isSubmitting = false;
+      });
+    }
   }
 
   @override
@@ -71,8 +85,17 @@ class _Step3HotelState extends State<Step3Hotel> {
         ),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: _submitForm,
-          child: const Text('Terminer'),
+          onPressed: _isSubmitting
+              ? null
+              : _submitForm, // Désactiver le bouton si en soumission
+          child: _isSubmitting
+              ? const Text('En cours...') // Indicateur visuel
+              : const Text('Terminer'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _isSubmitting
+                ? Colors.grey
+                : null, // Couleur pour l'état désactivé
+          ),
         ),
       ],
     );

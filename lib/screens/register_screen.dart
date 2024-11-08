@@ -4,7 +4,7 @@ import 'package:yumpro/screens/onboarding_screen.dart';
 import 'package:yumpro/services/api_service.dart';
 import 'package:yumpro/services/auth_service.dart';
 import 'package:yumpro/services/mixpanel_service.dart';
-import 'package:yumpro/utils/custom_widgets.dart'; // Importez l'écran de connexion
+import 'package:yumpro/utils/custom_widgets.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,6 +21,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final AuthService _authService = AuthService();
   final ApiService _apiService = ApiService();
 
+  bool _isLoading =
+      false; // Ajout de la variable d'état pour suivre le chargement
+
   void _register() async {
     final String email = _emailController.text.trim().toLowerCase();
     final String password = _passwordController.text.trim();
@@ -33,17 +36,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    setState(() {
+      _isLoading = true; // Désactive le bouton au début de la requête
+    });
+
     try {
       final response = await _apiService.signup(email, password);
-      // Si l'inscription réussit, redirigez vers la page d'onboarding ou de login
+
+      // Si l'inscription réussit, redirige vers la page d'onboarding ou de login
       await _authService.saveToken(response);
 
-      // Get user information after successful login
+      // Obtenir les informations utilisateur après l'inscription
       final userData = await _apiService.getUser(response);
 
-      // Save user information in SharedPreferences
+      // Sauvegarder les informations utilisateur
       await _authService.saveUserInfo(userData);
       AnalyticsManager().trackEvent("New user");
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const OnboardingScreen(),
@@ -54,6 +63,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Registration failed: $error')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false; // Réactive le bouton une fois la requête terminée
+      });
     }
   }
 
@@ -111,21 +124,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 50.0),
               Center(
                 child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: CustomWidgets.secondaryButton(
-                        text: "Créer mon compte", onPressed: _register)),
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: CustomWidgets.secondaryButton(
+                    text: _isLoading
+                        ? "Veuillez patienter..."
+                        : "Créer mon compte",
+                    onPressed: _isLoading ? () {} : _register,
+                  ),
+                ),
               ),
               const SizedBox(height: 20.0),
               // TextButton pour revenir à l'écran de connexion
               CustomWidgets.textButton(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
-                  },
-                  text: 'Vous avez déjà un compte ? Connectez-vous'),
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
+                },
+                text: 'Vous avez déjà un compte ? Connectez-vous',
+              ),
             ],
           ),
         ),

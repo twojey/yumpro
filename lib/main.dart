@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:yumpro/models/invitation.dart';
 import 'package:yumpro/screens/forgot_password_screen.dart';
@@ -8,17 +7,29 @@ import 'package:yumpro/screens/invitation_page.dart';
 import 'package:yumpro/screens/invitations_details.dart';
 import 'package:yumpro/screens/landing_screen.dart';
 import 'package:yumpro/screens/login_screen.dart';
+import 'package:yumpro/screens/newsletter_page.dart';
 import 'package:yumpro/screens/onboarding_screen.dart';
 import 'package:yumpro/screens/register_screen.dart';
 import 'package:yumpro/screens/reset_password_screen.dart';
 import 'package:yumpro/services/auth_service.dart';
+import 'package:yumpro/services/mixpanel_service.dart';
 import 'package:yumpro/utils/appcolors.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // Pour charger les variables d'environnement
 
 void main() async {
-  setUrlStrategy(PathUrlStrategy()); // Configure URL strategy without #
-  print("aaa");
+  // Assurez-vous que les liaisons Flutter sont initialisées
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Charger les variables d'environnement (si tu utilises dotenv)
   await dotenv.load(fileName: ".env");
-  print("bbb");
+
+  await AnalyticsManager().init(
+      "1f791bb9a5e27c54a6f0443e425a143d"); // Initialiser Mixpanel avec le token
+
+  // Configurer la stratégie d'URL sans #
+  setUrlStrategy(PathUrlStrategy());
+
+  // Démarrer l'application
   runApp(const MyApp());
 }
 
@@ -36,7 +47,7 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         final uri = Uri.parse(settings.name!);
 
-        // Handle dynamic invitation routes
+        // Gérer les routes dynamiques pour les invitations
         if (uri.pathSegments.length == 2 &&
             uri.pathSegments.first == 'invitation') {
           final id = uri.pathSegments[1];
@@ -45,7 +56,7 @@ class MyApp extends StatelessWidget {
           );
         }
 
-        // Handle other routes
+        // Gérer les autres routes
         switch (uri.path) {
           case '/':
             return MaterialPageRoute(
@@ -55,10 +66,11 @@ class MyApp extends StatelessWidget {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Scaffold(
                       body: Center(
-                          child: CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(AppColors.accent),
-                      )),
+                        child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(AppColors.accent),
+                        ),
+                      ),
                     );
                   } else if (snapshot.hasData) {
                     final userData = snapshot.data!;
@@ -106,6 +118,17 @@ class MyApp extends StatelessWidget {
               builder: (context) =>
                   InvitationDetailsScreen(invitation: invitation!),
             );
+          case '/newsletter':
+            final invitationId = uri.queryParameters['id'] ?? '0';
+            final token = uri.queryParameters['token'] ?? '';
+            return MaterialPageRoute(
+              builder: (context) => NewsletterPage(
+                invitationId: int.parse(
+                    invitationId), // Assurez-vous de convertir en entier
+                token: token, // Passer le token
+              ),
+            );
+
           case '/forgot_password':
             return MaterialPageRoute(
               builder: (context) => ForgotPasswordScreen(),

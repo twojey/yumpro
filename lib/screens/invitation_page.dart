@@ -28,16 +28,14 @@ class _InvitationPageState extends State<InvitationPage> {
   }
 
   Future<void> _initializeMixpanel() async {
-    await AnalyticsManager().init(
-        "1f791bb9a5e27c54a6f0443e425a143d"); // Remplacez par votre jeton Mixpanel
+    await AnalyticsManager().init("1f791bb9a5e27c54a6f0443e425a143d");
     setState(() {
       _isMixpanelInitialized = true;
     });
   }
 
   Future<void> _validateCode() async {
-    if (!_isMixpanelInitialized)
-      return; // Assurez-vous que Mixpanel est initialisé
+    if (!_isMixpanelInitialized) return;
 
     final code = _codeController.text;
     if (code.isEmpty) {
@@ -50,8 +48,13 @@ class _InvitationPageState extends State<InvitationPage> {
     try {
       final invitationData = await _apiService.consumeInvitation(
           int.parse(widget.invitationId), int.parse(code));
+      print(invitationData);
+
+      // Récupérer les informations de `workspace` ou `newsletter`
       final restaurantName = invitationData['_restaurant']['name'];
-      final hotelName = invitationData['_workspace']['name'];
+      final hotelName = invitationData['_workspace']?['name'] ??
+          invitationData['_newsletter']?['name'] ??
+          'Nom inconnu';
 
       setState(() {
         _errorMessage = null;
@@ -84,12 +87,10 @@ class _InvitationPageState extends State<InvitationPage> {
             label: 'OK',
             textColor: AppColors.primaryGold,
             onPressed: () {
-              // Code pour fermer la SnackBar
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
             },
           ),
-          duration: const Duration(
-              seconds: 7), // La SnackBar ne disparait pas automatiquement
+          duration: const Duration(seconds: 7),
         ),
       );
     }
@@ -103,8 +104,16 @@ class _InvitationPageState extends State<InvitationPage> {
 
   Widget _buildInvitationDetails(Map<String, dynamic> data) {
     final workspace = data['_workspace'];
-    final team = List<Map<String, dynamic>>.from(workspace['team']);
-    final hotelName = workspace['name'];
+    final newsletter = data['_newsletter'];
+    final source = workspace ?? newsletter;
+
+    final team = workspace != null
+        ? List<Map<String, dynamic>>.from(workspace['team'])
+        : [];
+
+    final hotelName = source['name'];
+    final photoUrl = source['photo_url'] ??
+        'https://yummap.s3.eu-north-1.amazonaws.com/yumpro/hotel_yummap.webp';
 
     return Center(
       child: ConstrainedBox(
@@ -116,8 +125,8 @@ class _InvitationPageState extends State<InvitationPage> {
             children: <Widget>[
               Icon(
                 Icons.check_circle,
-                color: Colors.green, // Couleur verte pour l'icône
-                size: 100, // Taille de l'icône
+                color: Colors.green,
+                size: 100,
               ),
               const SizedBox(height: 20),
               const Text(
@@ -125,7 +134,7 @@ class _InvitationPageState extends State<InvitationPage> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.green, // Couleur verte pour le texte
+                  color: Colors.green,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -134,48 +143,47 @@ class _InvitationPageState extends State<InvitationPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.green, // Couleur verte pour le texte
+                  color: Colors.green,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               ClipRRect(
-                borderRadius: BorderRadius.circular(8.0), // Coins arrondis
+                borderRadius: BorderRadius.circular(8.0),
                 child: Image.network(
-                  workspace['photo_url'],
-                  width: 150, // Largeur fixe de l'image
-                  height: 100, // Hauteur fixe de l'image
-                  fit: BoxFit.cover, // Ajuster l'image pour remplir le cadre
+                  photoUrl,
+                  width: 150,
+                  height: 100,
+                  fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(height: 10),
               Text(
                 '$hotelName',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold, // Titre en gras
+                  fontWeight: FontWeight.bold,
                   fontSize: 24,
                 ),
               ),
               const SizedBox(height: 20),
-              // Utilisation de ListView pour centrer la liste des membres
-              Container(
-                height: 200, // Hauteur fixe pour la liste
-                child: ListView(
-                  shrinkWrap: true,
-                  children: team.map((member) {
-                    final user = member['_user'];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        radius: 20, // Taille petite
-                        backgroundImage: NetworkImage(user['photo_url']),
-                      ),
-                      title: Text('${user['first_name']} ${user['name']}'),
-                      subtitle: Text(
-                          'Role: ${member['role']}'), // Retrait du champ "status"
-                    );
-                  }).toList(),
+              if (workspace != null && team.isNotEmpty)
+                Container(
+                  height: 200,
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: team.map((member) {
+                      final user = member['_user'];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          radius: 20,
+                          backgroundImage: NetworkImage(user['photo_url']),
+                        ),
+                        title: Text('${user['first_name']} ${user['name']}'),
+                        subtitle: Text('Role: ${member['role']}'),
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -197,7 +205,7 @@ class _InvitationPageState extends State<InvitationPage> {
                       padding: const EdgeInsets.all(16.0),
                       child: Container(
                         constraints: const BoxConstraints(
-                          maxWidth: 250, // Limiter la largeur à 250 pixels
+                          maxWidth: 250,
                         ),
                         child: TextField(
                           controller: _codeController,
