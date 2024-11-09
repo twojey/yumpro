@@ -9,6 +9,7 @@ import 'package:printing/printing.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:video_player/video_player.dart';
 import 'package:yumpro/models/invitation.dart';
+import 'package:yumpro/services/mixpanel_service.dart';
 import 'package:yumpro/utils/appcolors.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pdf/widgets.dart' as pw;
@@ -47,6 +48,11 @@ class InvitationDetailsScreen extends StatelessWidget {
     }
 
     Future<void> generateAndDownloadPDF() async {
+      var properties = {
+        "name_restaurant": invitation.restaurant.name,
+        "workspace_id": invitation.workspaceId
+      };
+      AnalyticsManager().trackEvent("Download", properties);
       DateTime expirationDate = DateTime.fromMillisecondsSinceEpoch(
           invitation.dateExpiration ?? DateTime.now().millisecondsSinceEpoch);
       DateTime dateUsage = DateTime.fromMillisecondsSinceEpoch(
@@ -81,16 +87,23 @@ class InvitationDetailsScreen extends StatelessWidget {
                   pw.SizedBox(height: 10),
 
                   if (invitation.consumed)
-                    pw.Text('Invitation consommée le ${formatExpirationDate(dateUsage)}',
-                                textAlign: pw.TextAlign.center),
+                    pw.Text(
+                        'Invitation consommée le ${formatExpirationDate(dateUsage)}',
+                        textAlign: pw.TextAlign.center),
 
-                  if (!invitation.consumed && date.isAfter(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)))
-                    pw.Text('Invitation expirée le ${formatExpirationDate(expirationDate)}',
-                                textAlign: pw.TextAlign.center),
-                
-                  if (!invitation.consumed && date.isBefore(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)))
-                     pw.Text('Expire le : ${formatExpirationDate(expirationDate)}',
-                                textAlign: pw.TextAlign.center),
+                  if (!invitation.consumed &&
+                      date.isAfter(DateTime.fromMillisecondsSinceEpoch(
+                          invitation.dateExpiration! * 1000)))
+                    pw.Text(
+                        'Invitation expirée le ${formatExpirationDate(expirationDate)}',
+                        textAlign: pw.TextAlign.center),
+
+                  if (!invitation.consumed &&
+                      date.isBefore(DateTime.fromMillisecondsSinceEpoch(
+                          invitation.dateExpiration! * 1000)))
+                    pw.Text(
+                        'Expire le : ${formatExpirationDate(expirationDate)}',
+                        textAlign: pw.TextAlign.center),
 
                   // pw.Text('Expire laaa : ${formatExpirationDate(expirationDate)}',
                   //     textAlign: pw.TextAlign.center),
@@ -272,17 +285,21 @@ class InvitationDetailsScreen extends StatelessWidget {
                           //     color: Colors.black,
                           //   ),
                           // ),
-                          if(invitation.consumed)
-                          Text(
+                          if (invitation.consumed)
+                            Text(
                               'Invitation consomée le ${formatExpirationDate(usageDate)}',
                               style: const TextStyle(color: AppColors.textHint),
                             ),
-                          if(!invitation.consumed && date.isAfter(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)) )
-                          Text(
-                            'Invitation expirée le ${formatExpirationDate(expirationDate)}',
-                            style: const TextStyle(color: AppColors.textHint),
-                          ),
-                          if(!invitation.consumed && date.isBefore(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)))
+                          if (!invitation.consumed &&
+                              date.isAfter(DateTime.fromMillisecondsSinceEpoch(
+                                  invitation.dateExpiration! * 1000)))
+                            Text(
+                              'Invitation expirée le ${formatExpirationDate(expirationDate)}',
+                              style: const TextStyle(color: AppColors.textHint),
+                            ),
+                          if (!invitation.consumed &&
+                              date.isBefore(DateTime.fromMillisecondsSinceEpoch(
+                                  invitation.dateExpiration! * 1000)))
                             Text(
                               'Expire le ${formatExpirationDate(expirationDate)}',
                               style: const TextStyle(color: AppColors.textHint),

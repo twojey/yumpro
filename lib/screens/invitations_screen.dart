@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yumpro/models/invitation.dart';
 import 'package:yumpro/services/api_service.dart';
+import 'package:yumpro/services/mixpanel_service.dart';
 import 'package:yumpro/utils/appcolors.dart';
 import 'package:intl/intl.dart'; // Pour formater la date
 import 'package:intl/date_symbol_data_local.dart'; // Pour initialiser les données de localisation
@@ -122,17 +123,21 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
                               ),
                             ),
                           ),
-                          if(invitation.consumed)
-                          Text(
+                          if (invitation.consumed)
+                            Text(
                               'Invitation consomée le ${_formatDate(invitation.dateUsage)}',
                               style: const TextStyle(color: AppColors.textHint),
                             ),
-                          if(!invitation.consumed && date.isAfter(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)) )
-                          Text(
-                            'Invitation expirée le ${_formatDate(invitation.dateExpiration)}',
-                            style: const TextStyle(color: AppColors.textHint),
-                          ),
-                          if(!invitation.consumed && date.isBefore(DateTime.fromMillisecondsSinceEpoch(invitation.dateExpiration! * 1000)))
+                          if (!invitation.consumed &&
+                              date.isAfter(DateTime.fromMillisecondsSinceEpoch(
+                                  invitation.dateExpiration! * 1000)))
+                            Text(
+                              'Invitation expirée le ${_formatDate(invitation.dateExpiration)}',
+                              style: const TextStyle(color: AppColors.textHint),
+                            ),
+                          if (!invitation.consumed &&
+                              date.isBefore(DateTime.fromMillisecondsSinceEpoch(
+                                  invitation.dateExpiration! * 1000)))
                             Text(
                               'Expire le ${_formatDate(invitation.dateExpiration)}',
                               style: const TextStyle(color: AppColors.textHint),
@@ -140,6 +145,12 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
                         ],
                       ),
                       onTap: () async {
+                        var properties = {
+                          "name_restaurant": invitation.restaurant.name,
+                          "workspace_id": invitation.workspaceId
+                        };
+                        AnalyticsManager()
+                            .trackEvent("ReadInvitation", properties);
                         if (!invitation.isRead) {
                           await _markInvitationAsRead(invitation.id);
                           setState(() {
